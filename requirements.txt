@@ -3,3 +3,4 @@ opencv-python==4.11.0.86
 scikit-image==0.25.1
 scipy==1.15.1
 numba==0.61.0
+pydicom==3.0.1
