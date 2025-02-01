@@ -3,7 +3,7 @@ import numpy as np
 import sys
 import argparse
 
-from segmentation.loading import load_image
+from segmentacao.carregar import carregar_imagem
 
 def apply_window(image, window_center, window_width):
     """Applies windowing to enhance contrast in the DICOM image."""
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     parser.add_argument("input_image", help="Path to DICOM lung image")
     args = parser.parse_args()
 
-    image = load_image(args.input_image)
+    image = carregar_imagem(args.input_image)
     print(image.max())
     visualize([apply_window(image, -300, 700)])
     cv2.destroyAllWindows()
