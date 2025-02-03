@@ -1,6 +1,7 @@
 import pydicom as dicom
 import numpy as np
 
+
 def carregar_imagem(input_path: str) -> np.ndarray:
     """
     Carrega imagem do tipo DICOM e retorna a imagem em Hounsfield Units (HU).
