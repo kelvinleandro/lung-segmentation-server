@@ -5,3 +5,4 @@ scipy==1.15.1
 numba==0.61.0
 pydicom==3.0.1
 ruff==0.9.4
+pytest==8.3.4
