@@ -17,11 +17,7 @@ def inicializa_curva(
     Return:
         curva: lista de pontos que representam a curva
     """
-    curva = []
     angulos = np.linspace(0, 2 * np.pi, quantidade_pixels)
-    for ang in angulos:
-        novo_ponto = ponto + np.r_[raio * np.cos(ang), raio * np.sin(ang)]
+    curva = ponto + np.c_[np.cos(angulos), np.sin(angulos)] * raio
 
-        curva.append(novo_ponto)
-
-    return np.array(curva).astype(np.int16)
+    return curva.astype(np.int16)
