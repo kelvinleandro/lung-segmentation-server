@@ -18,7 +18,10 @@ def inicializa_curva(
         curva: lista de pontos que representam a curva
     Raises:
         AssertionError: caso curva seja menor que 0 em algum ponto
+        AssertionError: caso a quantidade_pixels seja menor que 2
     """
+    assert quantidade_pixels >= 2, "Quantidade de pixels deve ser sempre maior que 2"
+
     angulos = np.linspace(0, 2 * np.pi, quantidade_pixels)
     curva = ponto + np.c_[np.cos(angulos), np.sin(angulos)] * raio
 
