@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-def energia_externa2(
+def energia_externa(
     imagem: np.ndarray,
     probabilidade: np.ndarray,
     probablidade3: float = 0.2,
@@ -28,7 +28,7 @@ def energia_externa2(
     sobel_y = cv2.Sobel(imagem, cv2.CV_64F, 0, 1, ksize=3)
     energia = np.sqrt(sobel_x**2 + sobel_y**2)
 
-    # Mascara da probabilidade
+    # Mascara de probabilidade
     mask = (probabilidade[2] >= probablidade3) | (probabilidade[3] > probablidade4)
     energia[~mask] = 0
 
