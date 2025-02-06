@@ -13,10 +13,10 @@ def forca_continuidade(pontos: np.array, indice: int) -> np.float64:
     """
 
     # Calcular a distância média entre os pontos
-    DM = np.linalg.norm(pontos - np.roll(pontos, 1, axis=0), axis=1).mean()
+    dm = np.linalg.norm(pontos - np.roll(pontos, 1, axis=0), axis=1).mean()
 
     # Calcular a derivada discreta do ponto
     dc = np.linalg.norm(pontos[indice] - pontos[indice - 1])
 
-    return np.abs(DM - dc)
+    return np.abs(dm - dc)
 
