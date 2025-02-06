@@ -21,7 +21,7 @@ def energia_externa2(
         probablidade4 (float): Limiar da probabilidade 4 para definir o valor da energia
         crispy como 0.
     Return:
-        energia (np.ndarray): Matriz com as energias crispy de todos os pontos da imagem.
+        energia (np.ndarray): Matriz das energias crispy de todos os pontos da imagem.
     """
     # Cálculo do Sobel
     sobel_x = cv2.Sobel(imagem, cv2.CV_64F, 1, 0, ksize=3)
