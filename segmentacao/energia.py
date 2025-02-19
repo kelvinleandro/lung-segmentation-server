@@ -1,6 +1,9 @@
 import numpy as np
 import cv2
 
+from segmentacao.forca import forca_adaptativa, forca_continuidade
+
+
 def energia_externa(
     imagem: np.ndarray,
     probabilidade: np.ndarray,
@@ -35,3 +38,9 @@ def energia_externa(
     return energia
 
 
+def energia_interna_adaptativa(
+    curva: np.ndarray, indice: int, w_adapt: float = 0.1, w_cont: float = 0.6
+):
+    adaptativa = w_adapt * forca_adaptativa(curva, indice)
+    continuidade = w_cont * forca_continuidade(curva, indice)
+    return adaptativa + continuidade
