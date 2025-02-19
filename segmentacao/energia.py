@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import numba
 
 from segmentacao.forca import forca_adaptativa, forca_continuidade
 
@@ -40,7 +41,21 @@ def energia_externa(
 
 def energia_interna_adaptativa(
     curva: np.ndarray, indice: int, w_adapt: float = 0.1, w_cont: float = 0.6
-):
+) -> np.floating:
+    """
+    Calcula a energia interna adaptativa, utilizando a força adaptativa e força
+    de continuidade ponderadas
+
+    Args:
+        curva (np.ndarray): Curva de n pontos
+        indice (int): Indice do ponto da curva
+        w_adapt (float): Peso da energia interna adaptativa
+        w_cont (float): Peso da energia de continuidade
+    Return:
+        energia_interna_adaptativa (float): Energia interna adaptativa do ponto da curva
+    """
     adaptativa = w_adapt * forca_adaptativa(curva, indice)
     continuidade = w_cont * forca_continuidade(curva, indice)
     return adaptativa + continuidade
+
+
