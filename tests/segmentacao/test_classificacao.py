@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from segmentacao.classificacao import (
+from backend.segmentacao.classificacao import (
     calcula_ocorrencias_classes,
     probabilidade_classes,
 )
@@ -53,3 +53,6 @@ def teste_probabilidade_classes(ocorrencias_amostra):
     assert np.all(probabilidades[:, zero_mask] == 0.2), (
         "Para pixels sem ocorrências, a probabilidade deve ser 0.2 (1/5)."
     )
+
+if __name__ == "__main__":
+    pytest.main(["backend/tests/segmentacao/test_classificacao.py"])

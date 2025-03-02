@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from segmentacao.forca import forca_continuidade
+from backend.segmentacao.forca import forca_continuidade
 
 def test_zero_distancia():
     pontos = np.array([[0, 0], [0, 0], [0, 0]])
@@ -27,3 +27,6 @@ def test_triangulo():
 def test_quadrado():
     pontos = np.array([[0, 0], [4, 0], [4, 4], [0, 4]])
     assert forca_continuidade(pontos, 0) == 0.0
+
+if __name__ == "__main__":
+    pytest.main(["backend/tests/segmentacao/test_forca.py"])
