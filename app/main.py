@@ -1,9 +1,11 @@
 import asyncio
 import time
+
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.status import HTTP_504_GATEWAY_TIMEOUT
+
 from api.api import api_router
 from schemas.healthcheck import HealthCheck
 
@@ -15,7 +17,10 @@ app = FastAPI(
     openapi_url="/api/v1/openapi.json",
     openapi_tags=[
         {"name": "Healthcheck", "description": "Healthcheck endpoint for the API."},
-        {"name": "Segmentation", "description": "Segmentation endpoint for DICOM images."},
+        {
+            "name": "Segmentation",
+            "description": "Segmentation endpoint for DICOM images.",
+        },
     ],
 )
 
