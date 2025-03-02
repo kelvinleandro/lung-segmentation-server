@@ -1,5 +1,5 @@
 import numpy as np
-
+from math import atan2, sin, cos, pi
 
 def crisp_inicial(
     imagem: np.ndarray, 
@@ -135,3 +135,134 @@ def remover_pontos(
     
     curva_filtrada.append(curva[-1])
     return np.array(curva_filtrada, dtype=np.int16)
+
+
+def no_pulmao(ponto, imagem):
+    """
+    Verifica se um ponto está dentro do pulmão baseado nos valores de UH
+    
+    Args:
+        ponto (np.array): Coordenadas (x, y) do ponto
+        imagem (np.ndarray): Imagem do pulmão em UH
+        
+    Returns:
+        bool: True se o ponto está no pulmão, False caso contrário
+    """
+    x, y = int(round(ponto[0])), int(round(ponto[1]))
+    
+    # Verificar se o ponto está dentro dos limites da imagem
+    if x < 0 or x >= imagem.shape[1] or y < 0 or y >= imagem.shape[0]:
+        return False
+    
+    # Verificar se o valor do pixel está entre -1000 UH e -500 UH (tecido pulmonar)
+    valor_uh = imagem[y, x]
+    return -1000 <= valor_uh <= -500
+
+def na_curva(ponto, curva):
+    """
+    Verifica se um ponto está dentro da curva
+    
+    Args:
+        ponto (np.array): Coordenadas (x, y) do ponto
+        curva (np.ndarray): Pontos da curva de formato (n, 2)
+        
+    Returns:
+        bool: True se o ponto está dentro da curva, False caso contrário
+    """
+    # Algoritmo de ray casting para determinar se ponto está dentro da curva
+    x, y = ponto
+    n = len(curva)
+    dentro = False
+    
+    for i in range(n):
+        x1, y1 = curva[i]
+        x2, y2 = curva[(i + 1) % n]
+        
+        # Verificar se o raio cruza a linha
+        if ((y1 > y) != (y2 > y)) and (x < (x2 - x1) * (y - y1) / (y2 - y1) + x1):
+            dentro = not dentro
+            
+    return dentro
+
+def adicionar_pontos(curva, imagem, d_max):
+    """
+    Recebe pontos da curva, a imagem de pulmão em UH e a distância mínima para adicionar pontos na curva
+
+    Args:
+        curva (np.ndarray): Pontos da curva.
+        imagem (np.ndarray): Imagem do pulmão.
+        d_max (float): Distância máxima entre dois pontos (acima disso, adiciona-se um ponto)
+    Returns:
+        np.ndarray: Curva com os pontos adicionados
+    """
+    # Inicializa nova curva com pontos existentes
+    nova_curva = curva.copy()
+    
+    # Quantidade de pontos originais na curva
+    n = len(curva)
+    
+    # Inicializa lista de pontos a serem adicionados
+    pontos_a_adicionar = []
+    
+    # Verifica cada par consecutivo de pontos
+    for i in range(n):
+        # Ponto atual e próximo (o último ponto conecta com o primeiro)
+        v1 = curva[i]
+        v2 = curva[(i + 1) % n]
+        
+        # Calcula a distância euclidiana entre os pontos
+        distancia = np.sqrt(np.sum((v2 - v1)**2))
+        
+        # Se a distância for maior que a máxima, adiciona um ponto entre eles
+        if distancia > d_max:
+            # Calcula o ponto médio entre v1 e v2
+            ponto_medio = (v1 + v2) / 2
+            
+            # Verifica se o ponto médio está no pulmão
+            if no_pulmao(ponto_medio, imagem):
+                # Se estiver no pulmão, adiciona diretamente
+                pontos_a_adicionar.append((i + 1, ponto_medio))
+            else:
+                # Se não estiver no pulmão, precisamos deslocar o ponto para dentro do pulmão
+                
+                # Calcula o ângulo da semi-reta formada por v1 e v2
+                angulo = atan2(v2[1] - v1[1], v2[0] - v1[0])
+                
+                # Calcula as direções perpendiculares
+                angulo1 = angulo + pi/2
+                angulo2 = angulo - pi/2
+                
+                # Pontos nas duas direções perpendiculares (pequena distância para verificação)
+                p1 = np.array([ponto_medio[0] + 5 * cos(angulo1), ponto_medio[1] + 5 * sin(angulo1)])
+                p2 = np.array([ponto_medio[0] + 5 * cos(angulo2), ponto_medio[1] + 5 * sin(angulo2)])
+                
+                # Determina qual direção está dentro da curva
+                angulo_correto = angulo1 if na_curva(p1, curva) else angulo2
+                
+                # Procura pelo primeiro ponto na direção correta que está dentro do pulmão
+                encontrou_ponto = False
+                for dist in range(1, 51):  # Testa distâncias de 1 a 50
+                    ponto_teste = np.array([
+                        ponto_medio[0] + dist * cos(angulo_correto), 
+                        ponto_medio[1] + dist * sin(angulo_correto)
+                    ])
+                    
+                    if no_pulmao(ponto_teste, imagem):
+                        pontos_a_adicionar.append((i + 1, ponto_teste))
+                        encontrou_ponto = True
+                        break
+                
+                # Se não encontrou nenhum ponto válido, adiciona o ponto médio mesmo assim
+                if not encontrou_ponto:
+                    pontos_a_adicionar.append((i + 1, ponto_medio))
+    
+    # Adiciona os novos pontos à curva, em ordem
+    pontos_a_adicionar.sort(key=lambda x: x[0])
+    
+    # Adiciona os pontos na nova curva
+    offset = 0
+    for idx, ponto in pontos_a_adicionar:
+        nova_curva = np.insert(nova_curva, idx + offset, ponto, axis=0)
+        offset += 1
+        
+    return nova_curva
