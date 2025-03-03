@@ -43,7 +43,6 @@ def classificar_pixel(pixel_value: int) -> int:
     else:
         return 5  # u5 - áreas não classificadas
 
-
 def limiarizacao_multipla(imagem_cinza: np.ndarray) -> tuple:
     """
     Aplica limiarização múltipla para segmentar as áreas de interesse na imagem.
@@ -54,20 +53,17 @@ def limiarizacao_multipla(imagem_cinza: np.ndarray) -> tuple:
     Retorna:
         np.ndarray: Imagem com classificação dos pixels com base nos intervalos de UH.
     """
-    # Aplicar um filtro Gaussiano para suavizar a imagem
-    imagem_suavizada = cv2.GaussianBlur(imagem_cinza, (5, 5), 0)  # Kernel size (5, 5) e sigma = 0
-
     # Criar uma imagem para armazenar as classes
-    imagem_classes = np.zeros(imagem_suavizada.shape, dtype=np.uint8)
+    imagem_classes = np.zeros(imagem_cinza.shape, dtype=np.uint8)
 
     # Percorrer todos os pixels e aplicar a classificação
-    for i in range(imagem_suavizada.shape[0]):
-        for j in range(imagem_suavizada.shape[1]):
-            pixel_value = int(imagem_suavizada[i, j])  # Valor do pixel
+    for i in range(imagem_cinza.shape[0]):
+        for j in range(imagem_cinza.shape[1]):
+            pixel_value = int(imagem_cinza[i, j])  # Valor do pixel
             imagem_classes[i, j] = classificar_pixel(pixel_value)
 
     # Gerar a máscara binária com base nas áreas de interesse (u0 a u4)
-    mascara_pulmao = np.zeros(imagem_suavizada.shape, dtype=np.uint8)
+    mascara_pulmao = np.zeros(imagem_cinza.shape, dtype=np.uint8)
 
     # Definindo áreas de interesse (u0 a u4)
     mascara_pulmao[imagem_classes == 0] = 255  # Hiperaeradas
