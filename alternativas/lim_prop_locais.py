@@ -7,15 +7,17 @@ def aplicar_limiarizacao_propriedades(imagem, tamanho_janela=151, a=1.0, b=0.5,
                                        aplicar_interpolacao=True) -> tuple:
     """
     Aplica limiarização variável baseada na média e no desvio padrão locais.
-    
+
     args:
         imagem: np.ndarray - Imagem de entrada (em escala de cinza).
-        tamanho_janela: int - Define o tamanho da vizinhança usada para cálculo dos limiares.
+        tamanho_janela: int - Define o tamanho da vizinhança usada para
+                              cálculo dos limiares.
         a: float - Constante para ajustar a contribuição do desvio padrão.
         b: float - Constante para ajustar a contribuição da média.
-        usar_media_global: bool - Se True, usa a média global da imagem ao invés da local.
+        usar_media_global: bool - Se True, usa a média global da imagem
+                                  ao invés da local.
         aplicar_interpolacao: bool - Se True, aplica interpolação.
-    
+
     return:
         tuple:
             np.ndarray: Imagem com os novos contornos preenchidos em vermelho.
@@ -29,8 +31,10 @@ def aplicar_limiarizacao_propriedades(imagem, tamanho_janela=151, a=1.0, b=0.5,
 
     for y in range(altura):
         for x in range(largura):
-            y1, y2 = max(0, y - tamanho_janela // 2), min(altura, y + tamanho_janela // 2)
-            x1, x2 = max(0, x - tamanho_janela // 2), min(largura, x + tamanho_janela // 2)
+            y1 = max(0, y - tamanho_janela // 2)
+            y2 = min(altura, y + tamanho_janela // 2)
+            x1 = max(0, x - tamanho_janela // 2)
+            x2 = min(largura, x + tamanho_janela // 2)
 
             regiao = imagem[y1:y2, x1:x2]
             media_local = np.mean(regiao)
@@ -42,8 +46,11 @@ def aplicar_limiarizacao_propriedades(imagem, tamanho_janela=151, a=1.0, b=0.5,
             limiarizada[y, x] = 255 if imagem[y, x] > Txy else 0
 
     if aplicar_interpolacao:
-        limiarizada = cv2.resize(limiarizada, None, fx=1.2, fy=1.2, interpolation=cv2.INTER_CUBIC)
-        limiarizada = cv2.resize(limiarizada, (limiarizada.shape[1], limiarizada.shape[0]), interpolation=cv2.INTER_AREA)
+        limiarizada = cv2.resize(limiarizada, None, fx=1.2, fy=1.2,
+                                 interpolation=cv2.INTER_CUBIC)
+        limiarizada = cv2.resize(limiarizada, (limiarizada.shape[1],
+                                               limiarizada.shape[0]),
+                                 interpolation=cv2.INTER_AREA)
 
     imagem_limiarizada_inv = cv2.bitwise_not(limiarizada)
 
