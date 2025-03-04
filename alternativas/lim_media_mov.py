@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 from segmentacao.remove_fundo import remove_fundo
 
-def aplicar_limiarizacao_media_movel(imagem, n=171, b=0.8) -> tuple:
+def aplicar_limiarizacao_media_movel(imagem, n=171, b=0.8, 
+                                     aplicar_interpolacao=True) -> tuple:
     """
     Recebe uma imagem em escala de cinza, aplica limiarização usando
     média móvel e remove o fundo da imagem.
@@ -11,8 +12,7 @@ def aplicar_limiarizacao_media_movel(imagem, n=171, b=0.8) -> tuple:
         imagem: np.ndarray - Imagem de entrada (em escala de cinza).
         n: int - Número de pontos para a média móvel.
         b: float - Fator de ajuste do limiar.
-        tamanho_kernel: int - Tamanho do kernel para o desfoque.
-        sigma: int - Valor do sigma para o desfoque gaussiano.
+        aplicar_interpolacao: bool - Se True, aplica o desfoque mediano.
 
     return:
         tuple:
@@ -43,12 +43,13 @@ def aplicar_limiarizacao_media_movel(imagem, n=171, b=0.8) -> tuple:
         limiar = b * media_movel
         limiarizada[y, :] = np.where(linha > limiar, 255, 0)
 
+    if aplicar_interpolacao:
     # Refinar a máscara com interpolação
-    imagem_refinada = cv2.resize(limiarizada, None, fx=1.2, fy=1.2,
-                                 interpolation=cv2.INTER_CUBIC)
-    imagem_refinada = cv2.resize(imagem_refinada, (imagem.shape[1], imagem.shape[0]),
-                                 interpolation=cv2.INTER_AREA)
+        limiarizada = cv2.resize(limiarizada, None, fx=1.2, fy=1.2,
+                                    interpolation=cv2.INTER_CUBIC)
+        limiarizada = cv2.resize(limiarizada, (imagem.shape[1], imagem.shape[0]),
+                                    interpolation=cv2.INTER_AREA)
 
-    imagem_limiarizada_inv = cv2.bitwise_not(imagem_refinada)
+    imagem_limiarizada_inv = cv2.bitwise_not(limiarizada)
 
     return remove_fundo(imagem_limiarizada_inv)
