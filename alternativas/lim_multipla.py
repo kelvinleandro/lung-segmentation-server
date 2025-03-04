@@ -16,23 +16,27 @@ def classificar_pixel(pixel_value: int) -> int:
     Retorna:
         int: Classe do pixel (0 a 5).
     """
-    
+
     # Limites de HU em escala de cinza
-    lim_hiperaeradas_inferior = 0           # Equivale a -1000 HU
-    lim_hiperaeradas_superior = 8           # Equavele a -900  HU
-    lim_normalmente_aeradas_inferior = 8    # Equivale a -900  HU
-    lim_normalmente_aeradas_superior = 42   # Equivale a -500  HU
-    lim_pouco_aeradas_inferior = 42         # Equivale a -500  HU
-    lim_pouco_aeradas_superior = 76         # Equivale a -100  HU
-    lim_nao_aeradas_inferior = 76           # Equivale a -100  HU
-    lim_nao_aeradas_superior = 93           # Equivale a  100  HU
-    lim_osso_inferior = 136                 # Equivale a  600  HU
-    lim_osso_superior = 255                 # Equivale a  2000 HU
+    lim_hiperaeradas_inferior = 0  # Equivale a -1000 HU
+    lim_hiperaeradas_superior = 8  # Equavele a -900  HU
+    lim_normalmente_aeradas_inferior = 8  # Equivale a -900  HU
+    lim_normalmente_aeradas_superior = 42  # Equivale a -500  HU
+    lim_pouco_aeradas_inferior = 42  # Equivale a -500  HU
+    lim_pouco_aeradas_superior = 76  # Equivale a -100  HU
+    lim_nao_aeradas_inferior = 76  # Equivale a -100  HU
+    lim_nao_aeradas_superior = 93  # Equivale a  100  HU
+    lim_osso_inferior = 136  # Equivale a  600  HU
+    lim_osso_superior = 255  # Equivale a  2000 HU
 
     # Classificação dos intervalos de escala de cinza
     if lim_hiperaeradas_inferior <= pixel_value < lim_hiperaeradas_superior:
         return 0  # u0 - hiperaeradas
-    elif lim_normalmente_aeradas_inferior <= pixel_value < lim_normalmente_aeradas_superior:
+    elif (
+        lim_normalmente_aeradas_inferior
+        <= pixel_value
+        < lim_normalmente_aeradas_superior
+    ):
         return 1  # u1 - normalmente aeradas
     elif lim_pouco_aeradas_inferior <= pixel_value < lim_pouco_aeradas_superior:
         return 2  # u2 - pouco aeradas
@@ -43,6 +47,7 @@ def classificar_pixel(pixel_value: int) -> int:
     else:
         return 5  # u5 - áreas não classificadas
 
+
 def limiarizacao_multipla(imagem_cinza: np.ndarray) -> tuple:
     """
     Aplica limiarização múltipla para segmentar as áreas de interesse na imagem.
@@ -51,7 +56,7 @@ def limiarizacao_multipla(imagem_cinza: np.ndarray) -> tuple:
         imagem_cinza (np.ndarray): Pixels da imagem de entrada em escala de cinza.
 
     Retorna:
-        tuple: 
+        tuple:
             np.ndarray: Imagem com classificação dos pixels com base nos intervalos de UH.
             dictionary: Dicionário com os contornos válidos relativos ao pulmão.
 
