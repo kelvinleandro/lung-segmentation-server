@@ -51,7 +51,10 @@ def limiarizacao_multipla(imagem_cinza: np.ndarray) -> tuple:
         imagem_cinza (np.ndarray): Pixels da imagem de entrada em escala de cinza.
 
     Retorna:
-        np.ndarray: Imagem com classificação dos pixels com base nos intervalos de UH.
+        tuple: 
+            np.ndarray: Imagem com classificação dos pixels com base nos intervalos de UH.
+            dictionary: Dicionário com os contornos válidos relativos ao pulmão.
+
     """
     # Criar uma imagem para armazenar as classes
     imagem_classes = np.zeros(imagem_cinza.shape, dtype=np.uint8)
