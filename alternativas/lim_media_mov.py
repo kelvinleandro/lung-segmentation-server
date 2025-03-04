@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from segmentacao.remove_fundo import remove_fundo
 
-def aplicar_limiarizacao_media_movel(imagem, n=171, b=0.8, 
+def aplicar_limiarizacao_media_movel(imagem, n=171, b=0.8,
                                      aplicar_interpolacao=True) -> tuple:
     """
     Recebe uma imagem em escala de cinza, aplica limiarização usando
