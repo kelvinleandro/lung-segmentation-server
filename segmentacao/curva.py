@@ -2,11 +2,7 @@ import numpy as np
 from math import atan2, sin, cos, pi
 
 def crisp_inicial(
-    imagem: np.ndarray, 
-    lim_infY: int, 
-    lim_supY: int, 
-    lim_infX: int, 
-    lim_supX: int
+    imagem: np.ndarray, lim_infY: int, lim_supY: int, lim_infX: int, lim_supX: int
 ) -> np.ndarray:
     """
     Recebe uma imagem em formato de array NumPy e recorta a região definida pelos
@@ -80,38 +76,33 @@ def inicializa_curva(
     """
     assert quantidade_pixels >= 2, "Quantidade de pixels deve ser sempre maior que 2"
 
-    angulos = np.linspace(0, 2 * np.pi, quantidade_pixels+1)
+    angulos = np.linspace(0, 2 * np.pi, quantidade_pixels + 1)
     curva = ponto + np.c_[np.cos(angulos), np.sin(angulos)] * raio
 
     assert np.all(curva > 0), "Os pontos da curva devem sempre ser maior que 0"
 
     return curva[:-1].astype(np.int16)
 
-def calcular_angulo(p1:np.ndarray, 
-                    p2:np.ndarray, 
-                    p3:np.ndarray
-) -> float:
+
+def calcular_angulo(p1: np.ndarray, p2: np.ndarray, p3: np.ndarray) -> float:
     """
     Calcula o ângulo formado pelos três pontos (em graus).
     Args:
         pontos p1(i-1), p2(i) e p3(i+1)
     Return:
         angulo em graus entre os 3 pontos
-    
+
     """
     v1 = p1 - p2
     v2 = p3 - p2
-    
+
     cos_theta = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
-    cos_theta = np.clip(cos_theta, -1.0, 1.0) #Manter o cos entre -1 e 1
-    
+    cos_theta = np.clip(cos_theta, -1.0, 1.0)  # Manter o cos entre -1 e 1
+
     return np.degrees(np.arccos(cos_theta))
 
 
-def remover_pontos(
-    curva: np.ndarray, 
-    alpha: float = 20
-) -> np.ndarray:
+def remover_pontos(curva: np.ndarray, alpha: float = 20) -> np.ndarray:
     """
     Recebe pontos da curva e um ângulo mínimo para remover pontos da curva.
 
@@ -125,14 +116,14 @@ def remover_pontos(
     assert curva.shape[-1] == 2, "A curva deve ser um array de shape [n,2]"
 
     curva = curva[np.insert(np.any(np.diff(curva, axis=0), axis=1), 0, True)]
-    
+
     curva_filtrada = [curva[0]]
-    
+
     for i in range(1, len(curva) - 1):
-        angulo = calcular_angulo(curva[i-1], curva[i], curva[i+1])
+        angulo = calcular_angulo(curva[i - 1], curva[i], curva[i + 1])
         if angulo > alpha:
             curva_filtrada.append(curva[i])
-    
+
     curva_filtrada.append(curva[-1])
     return np.array(curva_filtrada, dtype=np.int16)
 

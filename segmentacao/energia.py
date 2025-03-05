@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import numba
 
 from segmentacao.forca import forca_adaptativa, forca_continuidade
 
@@ -40,7 +41,95 @@ def energia_externa(
 
 def energia_interna_adaptativa(
     curva: np.ndarray, indice: int, w_adapt: float = 0.1, w_cont: float = 0.6
-):
+) -> np.floating:
+    """
+    Calcula a energia interna adaptativa, utilizando a força adaptativa e força
+    de continuidade ponderadas
+
+    Args:
+        curva (np.ndarray): Curva de n pontos
+        indice (int): Indice do ponto da curva
+        w_adapt (float): Peso da energia interna adaptativa
+        w_cont (float): Peso da energia de continuidade
+    Return:
+        energia_interna_adaptativa (float): Energia interna adaptativa do ponto da curva
+    """
     adaptativa = w_adapt * forca_adaptativa(curva, indice)
     continuidade = w_cont * forca_continuidade(curva, indice)
     return adaptativa + continuidade
+
+
+def energia_total(
+    curva: np.ndarray,
+    indice: int,
+    energia_crisp: np.ndarray,
+    w_adapt: float = 0.1,
+    w_cont: float = 0.6,
+) -> np.floating:
+    """
+    Calcula a energia total, somando a energia interna adaptativa e a energia
+    crisp/externa
+
+    Args:
+        curva (np.ndarray): Curva de n pontos
+        indice (int): Indice do ponto da curva
+        energia_crisp (np.ndarray): Matriz de energia externa
+        w_adapt (float): Peso da energia interna adaptativa
+        w_cont (float): Peso da energia de continuidade
+    Return:
+        energia_total (float): Energia total do ponto da curva
+    """
+    x, y = curva[indice]
+    return np.float64(
+        energia_interna_adaptativa(curva, indice, w_adapt, w_cont) + energia_crisp[y, x]
+    )
+
+
+def minimiza_energia(
+    curva: np.ndarray,
+    indice: int,
+    energia_crisp: np.ndarray,
+    area_de_busca: int = 9,
+    w_cont=0.6,
+    w_adapt=0.1,
+) -> np.ndarray:
+    """
+    Minimiza a energia para um ponto de uma dada curva na área de busca
+    especificada e retorna o ponto com energia mínima.
+
+    Args:
+        curva (np.ndarray): Curva de n pontos
+        indice (int): Indice do ponto da curva
+        energia_crisp (np.ndarray): Matriz de energia externa
+        area_de_busca (int): Tamanho da área de busca
+        w_cont (float): Peso da energia de continuidade
+        w_adapt (float): Peso da energia interna adaptativa
+
+    Return:
+        melhor_ponto (np.ndarray): Melhor ponto encontrado na área de busca
+
+    """
+    assert area_de_busca % 2 == 1 and area_de_busca > 0, "Area de busca deve ser impar"
+
+    amplitude_de_indices = np.arange(-(area_de_busca // 2), area_de_busca // 2 + 1)
+    possiveis_pontos = (
+        np.dstack(np.meshgrid(amplitude_de_indices, amplitude_de_indices)).reshape(
+            area_de_busca**2, 2
+        )
+        + curva[indice]
+    )
+
+    energias_calculadas = np.zeros(area_de_busca**2)
+
+    for i, ponto_candidato in enumerate(possiveis_pontos):
+        curva_modificada = curva.copy()
+        curva_modificada[indice] = ponto_candidato
+        energia = energia_total(
+            curva_modificada, indice, energia_crisp, w_adapt=w_adapt, w_cont=w_cont
+        )
+
+        energias_calculadas[i] = energia
+
+    melhor_energia_indice = np.argmin(energias_calculadas)
+
+    return possiveis_pontos[melhor_energia_indice]
