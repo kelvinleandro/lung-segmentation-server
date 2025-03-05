@@ -16,8 +16,8 @@ def remove_fundo(
 
     Retorna:
         tuple:
-            - np.ndarray: Imagem com os novos contornos preenchidos em vermelho.
-            - dict: Dicionário onde cada chave é uma string (e.g., "contorno_0") e o valor é o contorno válido.
+            - dict: Dicionário onde cada chave é uma string (e.g., "contorno_0") e o valor é o contorno.
+            - dict: Dicionário onde cada chave é uma string (e.g., "contorno_0") e o valor é o contorno válido do pulmão.
     """
 
     #  margem (int): Distância mínima permitida das bordas  (10 pixels).
@@ -25,11 +25,6 @@ def remove_fundo(
 
     # Encontrar contornos na máscara
     contornos, _ = cv2.findContours(mascara, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Criar uma imagem preta para desenhar os contornos válidos
-    imagem_contornada = np.zeros(
-        (mascara.shape[0], mascara.shape[1], 3), dtype=np.uint8
-    )
 
     # Dicionário para armazenar os contornos válidos
     contornos_validos_dict = {}
@@ -63,9 +58,14 @@ def remove_fundo(
         # Calcula a área do contorno
         area = cv2.contourArea(contorno)
         if area_minima <= area <= area_maxima:
-            # Desenha o contorno em vermelho
-            cv2.drawContours(imagem_contornada, [contorno], -1, (0, 0, 255), 1)
             # Salva o contorno no dicionário
             contornos_validos_dict[f"contorno_{i}"] = contorno.squeeze().tolist()
 
-    return imagem_contornada, contornos_validos_dict
+    todos_contornos_dict = {
+        f"contorno_{i}": contorno.squeeze().tolist()
+        for i, contorno in enumerate(contornos)
+    }
+    return (
+        todos_contornos_dict,
+        contornos_validos_dict,
+    )
