@@ -7,6 +7,7 @@ def remove_fundo(
 ) -> tuple:
     """
     Mantém apenas contornos cujas áreas estão dentro do intervalo especificado e que não tocam a borda da imagem.
+    Agora os contornos não podem estar dentro de uma margem de até 10 pixels das bordas.
 
     Parâmetros:
         mascara (np.ndarray): Máscara binária com os contornos.
@@ -18,6 +19,10 @@ def remove_fundo(
             - np.ndarray: Imagem com os novos contornos preenchidos em vermelho.
             - dict: Dicionário onde cada chave é uma string (e.g., "contorno_0") e o valor é o contorno válido.
     """
+
+    #  margem (int): Distância mínima permitida das bordas  (10 pixels).
+    margem: int = 10
+
     # Encontrar contornos na máscara
     contornos, _ = cv2.findContours(mascara, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -38,14 +43,22 @@ def remove_fundo(
         if cv2.arcLength(contorno, True) == 0:
             continue  # Ignora contornos inválidos
 
-        # Verifica se algum ponto do contorno toca a borda
+        # Verifica se algum ponto do contorno está dentro da margem das bordas
         if np.any(
-            (contorno[:, 0, 0] == 0)
-            | (contorno[:, 0, 0] == largura - 1)
-            | (contorno[:, 0, 1] == 0)
-            | (contorno[:, 0, 1] == altura - 1)
+            (
+                contorno[:, 0, 0] <= margem
+            )  # Ponto a até 'margem' pixels da borda esquerda
+            | (
+                contorno[:, 0, 0] >= largura - margem
+            )  # Ponto a até 'margem' pixels da borda direita
+            | (
+                contorno[:, 0, 1] <= margem
+            )  # Ponto a até 'margem' pixels da borda superior
+            | (
+                contorno[:, 0, 1] >= altura - margem
+            )  # Ponto a até 'margem' pixels da borda inferior
         ):
-            continue  # Ignora contornos que tocam a borda
+            continue  # Ignora contornos que tocam a borda ou estão na margem
 
         # Calcula a área do contorno
         area = cv2.contourArea(contorno)
