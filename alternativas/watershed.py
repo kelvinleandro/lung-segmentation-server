@@ -7,7 +7,7 @@ def aplicar_watershed(imagem: np.ndarray, limiar=60,
                       aplicar_morfologia=True,
                       tamanho_kernel=3,
                       iteracoes_morfologia=2,
-                      dilatacao_iteracoes=1,
+                      iteracoes_dilatacao=1,
                       fator_dist_transform=0.3) -> np.ndarray:
     """
     Aplica o algoritmo Watershed para segmentação.
@@ -23,8 +23,8 @@ def aplicar_watershed(imagem: np.ndarray, limiar=60,
                                    para suavizar a segmentação.
         tamanho_kernel (int): Tamanho do kernel utilizado nas operações morfológicas.
         iteracoes_morfologia (int): Número de iterações das operações morfológicas.
-        dilatacao_iteracoes (int): Número de iterações para a operação de dilatação.
-        fator_dist_transform (float): Fator multiplicador para o limiar da 
+        iteracoes_dilatacao (int): Número de iterações para a operação de dilatação.
+        fator_dist_transform (float): Fator multiplicador para o limiar da
                                       transformada de distância.
 
     return:
@@ -46,11 +46,12 @@ def aplicar_watershed(imagem: np.ndarray, limiar=60,
                                           iterations=iteracoes_morfologia)
 
     # Criar marcadores para Watershed
-    certamente_fundo = cv2.dilate(mascara_pulmao, kernel, iterations=dilatacao_iteracoes)
+    certamente_fundo = cv2.dilate(mascara_pulmao, kernel,
+                                  iterations=iteracoes_dilatacao)
     dist_transform = cv2.distanceTransform(mascara_pulmao, cv2.DIST_L2, 5)
     _, certamente_primeiro_plano = cv2.threshold(dist_transform,
-                                                 fator_dist_transform * dist_transform.max(),
-                                                 255, 0)
+                                            fator_dist_transform * dist_transform.max(),
+                                            255, 0)
 
     certamente_primeiro_plano = np.uint8(certamente_primeiro_plano)
     incerto = cv2.subtract(certamente_fundo, certamente_primeiro_plano)
