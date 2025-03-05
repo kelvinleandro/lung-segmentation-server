@@ -3,15 +3,15 @@ import numpy as np
 
 
 def remove_fundo(
-    mascara: np.ndarray, area_minima: int = 3000, area_maxima: int = 40000
+    mascara: np.ndarray, area_minima: int = 3000, area_maxima: int = 50000
 ) -> tuple:
     """
-    Mantém apenas contornos fechados cujas áreas estão dentro do intervalo especificado e que não tocam a borda da imagem.
+    Mantém apenas contornos cujas áreas estão dentro do intervalo especificado e que não tocam a borda da imagem.
 
     Parâmetros:
         mascara (np.ndarray): Máscara binária com os contornos.
         area_minima (int): Área mínima permitida para os contornos (default: 3000).
-        area_maxima (int): Área máxima permitida para os contornos (default: 40000).
+        area_maxima (int): Área máxima permitida para os contornos (default: 50000).
 
     Retorna:
         tuple:
@@ -21,42 +21,38 @@ def remove_fundo(
     # Encontrar contornos na máscara
     contornos, _ = cv2.findContours(mascara, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Criar uma imagem para os contornos vermelhos
-    pulmao_contornado = np.zeros(
+    # Criar uma imagem preta para desenhar os contornos válidos
+    imagem_contornada = np.zeros(
         (mascara.shape[0], mascara.shape[1], 3), dtype=np.uint8
-    )  # Imagem em preto
+    )
 
     # Dicionário para armazenar os contornos válidos
     contornos_validos_dict = {}
 
-    # Obter as dimensões da imagem
+    # Dimensões da imagem
     altura, largura = mascara.shape
 
-    # Filtrar e desenhar apenas os contornos fechados que não tocam a borda e têm áreas dentro do intervalo especificado
+    # Filtrar os contornos que não tocam a borda e estão na faixa de área permitida
     for i, contorno in enumerate(contornos):
-        # Verificar se o contorno é fechado
-        if (
-            cv2.arcLength(contorno, True) > 0
-        ):  # Verifica se o contorno tem comprimento positivo
-            # Verificar se o contorno toca a borda da imagem
-            toca_borda = False
-            for ponto in contorno:
-                x, y = ponto[0]
-                if x == 0 or x == largura - 1 or y == 0 or y == altura - 1:
-                    toca_borda = True
-                    break
+        # Verificar se o contorno tem um perímetro válido (> 0)
+        if cv2.arcLength(contorno, True) == 0:
+            continue  # Ignora contornos inválidos
 
-            # Se o contorno não tocar a borda e tiver área dentro do intervalo, desenhar em vermelho e adicionar ao dicionário
-            if not toca_borda:
-                area = cv2.contourArea(contorno)
-                if area_minima <= area <= area_maxima:
-                    # Desenhar o contorno válido em vermelho na imagem de contornos vermelhos
-                    cv2.drawContours(
-                        pulmao_contornado, [contorno], -1, (0, 0, 255), 2
-                    )  # Vermelho
-                    # Adicionar o contorno ao dicionário de contornos válidos
-                    contornos_validos_dict[f"contorno_{i}"] = (
-                        contorno.squeeze().tolist()
-                    )
+        # Verifica se algum ponto do contorno toca a borda
+        if np.any(
+            (contorno[:, 0, 0] == 0)
+            | (contorno[:, 0, 0] == largura - 1)
+            | (contorno[:, 0, 1] == 0)
+            | (contorno[:, 0, 1] == altura - 1)
+        ):
+            continue  # Ignora contornos que tocam a borda
 
-    return pulmao_contornado, contornos_validos_dict
+        # Calcula a área do contorno
+        area = cv2.contourArea(contorno)
+        if area_minima <= area <= area_maxima:
+            # Desenha o contorno em vermelho
+            cv2.drawContours(imagem_contornada, [contorno], -1, (0, 0, 255), 1)
+            # Salva o contorno no dicionário
+            contornos_validos_dict[f"contorno_{i}"] = contorno.squeeze().tolist()
+
+    return imagem_contornada, contornos_validos_dict
