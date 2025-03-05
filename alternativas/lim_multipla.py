@@ -5,6 +5,7 @@ from segmentacao.carregar import carregar_imagem
 import alternativas.hu_para_cinza as hu
 import matplotlib.pyplot as plt
 
+
 def classificar_pixel(
     pixel_value: int,
     lim_hiperaeradas: tuple = (0, 8),
@@ -72,7 +73,7 @@ def limiarizacao_multipla(
 
     Retorna:
         np.ndarray: Imagem com classificação dos pixels com base nos intervalos de HU.
-            
+
     """
 
     # Criar uma imagem para armazenar as classes
