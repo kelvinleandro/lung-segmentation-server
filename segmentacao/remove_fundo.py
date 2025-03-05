@@ -13,14 +13,13 @@ def remove_fundo(
         mascara (np.ndarray): Máscara binária com os contornos.
         area_minima (int): Área mínima permitida para os contornos (default: 3000).
         area_maxima (int): Área máxima permitida para os contornos (default: 50000).
-        margem (int): Distância mínima permitida das bordas (default: 10 pixels).
 
     Retorna:
         tuple:
             - np.ndarray: Imagem com os novos contornos preenchidos em vermelho.
             - dict: Dicionário onde cada chave é uma string (e.g., "contorno_0") e o valor é o contorno válido.
     """
-    
+
     #  margem (int): Distância mínima permitida das bordas  (10 pixels).
     margem: int = 10
 
@@ -46,10 +45,18 @@ def remove_fundo(
 
         # Verifica se algum ponto do contorno está dentro da margem das bordas
         if np.any(
-            (contorno[:, 0, 0] <= margem)  # Ponto a até 'margem' pixels da borda esquerda
-            | (contorno[:, 0, 0] >= largura - margem)  # Ponto a até 'margem' pixels da borda direita
-            | (contorno[:, 0, 1] <= margem)  # Ponto a até 'margem' pixels da borda superior
-            | (contorno[:, 0, 1] >= altura - margem)  # Ponto a até 'margem' pixels da borda inferior
+            (
+                contorno[:, 0, 0] <= margem
+            )  # Ponto a até 'margem' pixels da borda esquerda
+            | (
+                contorno[:, 0, 0] >= largura - margem
+            )  # Ponto a até 'margem' pixels da borda direita
+            | (
+                contorno[:, 0, 1] <= margem
+            )  # Ponto a até 'margem' pixels da borda superior
+            | (
+                contorno[:, 0, 1] >= altura - margem
+            )  # Ponto a até 'margem' pixels da borda inferior
         ):
             continue  # Ignora contornos que tocam a borda ou estão na margem
 
