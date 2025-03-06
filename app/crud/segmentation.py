@@ -17,22 +17,6 @@ def segment_image(pixel_array) -> List[Tuple[float, float]]:
 
     return points
 
-
-def segment_image2(pixel_array, p1, p2, p3) -> List[Tuple[float, float]]:
-    """
-    Funcao experimental para testar a api localmente (a partir daqui sera implementada a funcao de segmentacao)
-
-    """
-    points = []
-
-    height, width = pixel_array.shape
-    for i in range(0, height, int(height / 11)):
-        for j in range(0, width, int(width / 11)):
-            points.append((float(i), float(j)))
-
-    return points
-
-
 def inicializa_curva(
     ponto: np.ndarray,
     raio: int = 30,
