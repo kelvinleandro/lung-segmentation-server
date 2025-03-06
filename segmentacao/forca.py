@@ -1,7 +1,11 @@
 import numpy as np
+from numba import jit
+
+from segmentacao.curva import na_curva
 
 
-def forca_continuidade(pontos: np.ndarray, indice: int) -> np.float64:
+@jit(nopython=True)
+def forca_continuidade(pontos: np.ndarray, indice: int) -> float:
     """
     Calcula a força de continuidade da curva em um ponto.
 
@@ -11,17 +15,24 @@ def forca_continuidade(pontos: np.ndarray, indice: int) -> np.float64:
     Return:
         float - Força de continuidade.
     """
+    tam = pontos.shape[0]
+
+    # Criar um array deslocado manualmente
+    pontos_shifted = np.empty_like(pontos)
+    pontos_shifted[1:] = pontos[:-1]  # Deslocamento equivalente ao np.roll
+    pontos_shifted[0] = pontos[-1]  # Circularidade mantida
 
     # Calcular a distância média entre os pontos
-    dm = np.linalg.norm(pontos - np.roll(pontos, 1, axis=0), axis=1).mean()
+    dm = np.mean(np.sqrt(np.sum((pontos - pontos_shifted) ** 2, axis=1)))
 
     # Calcular a derivada discreta do ponto
-    dc = np.linalg.norm(pontos[indice] - pontos[indice - 1])
+    dc = np.sqrt(np.sum((pontos[indice] - pontos[indice - 1]) ** 2))
 
-    return np.abs(dm - dc)
+    return abs(dm - dc)
 
 
-def forca_adaptativa(pontos: np.ndarray, indice: int) -> np.float64:
+@jit(nopython=True)
+def forca_adaptativa(pontos: np.ndarray, indice: int) -> float:
     """
     Recebe os pontos em ordem anti-horária da curva e calcula a força adaptativa
     no ponto de índice 'indice'.
@@ -32,10 +43,21 @@ def forca_adaptativa(pontos: np.ndarray, indice: int) -> np.float64:
     Returns:
         float: Força adaptativa no ponto de índice 'indice'.
     """
-    pm = (pontos[(indice - 1) % len(pontos)] + pontos[(indice + 1) % len(pontos)]) / 2
-    v1 = pontos[(indice + 1) % len(pontos)] - pontos[indice]
-    v2 = pontos[(indice - 1) % len(pontos)] - pontos[indice]
-    vet = np.sign(np.linalg.det([v1, v2]))
-    if vet == 0:
-        return np.float64(0.0)
-    return np.linalg.norm(pm + vet * pontos[indice])
+    tam = len(pontos)
+    pm = (pontos[(indice - 1) % tam] + pontos[(indice + 1) % tam]) / 2
+    sign = 0
+
+    if na_curva(pm, pontos):
+        sign = 1
+    else:
+        sign = -1
+
+    # v1 = pontos[(indice + 1) % tam] - pontos[indice]
+    # v2 = pontos[(indice - 1) % tam] - pontos[indice]
+    # det_v1_v2 = v1[0] * v2[1] - v1[1] * v2[0]  # Determinante 2D manual
+    # vet = np.sign(det_v1_v2)
+    #
+    # if vet == 0:
+    #     return 0.0
+
+    return np.sqrt(np.sum((pm + sign * pontos[indice]) ** 2))
