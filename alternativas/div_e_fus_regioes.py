@@ -14,7 +14,7 @@ def criterio_media(region: np.ndarray, referencia: float, limite_media: float) -
 
 
 def aplicar_divisao_e_fusao(
-    imagem: np.ndarray, limite_var: int, limite_media: int, referencia_media: int
+    imagem: np.ndarray, limite_var=40, limite_media=40, referencia_media= 5
 ) -> np.ndarray:
     """
     Aplica o algoritmo de Divisão e Fusão de Regiões para segmentação de pulmões.
