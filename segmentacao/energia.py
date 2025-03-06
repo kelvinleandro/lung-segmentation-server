@@ -39,6 +39,7 @@ def energia_externa(
     return energia
 
 
+@numba.njit
 def energia_interna_adaptativa(
     curva: np.ndarray, indice: int, w_adapt: float = 0.1, w_cont: float = 0.6
 ) -> np.floating:
@@ -56,9 +57,10 @@ def energia_interna_adaptativa(
     """
     adaptativa = w_adapt * forca_adaptativa(curva, indice)
     continuidade = w_cont * forca_continuidade(curva, indice)
-    return adaptativa + continuidade
+    return np.floating(adaptativa + continuidade)
 
 
+@numba.jit
 def energia_total(
     curva: np.ndarray,
     indice: int,
@@ -81,10 +83,12 @@ def energia_total(
     """
     x, y = curva[indice]
     return np.float64(
-        energia_interna_adaptativa(curva, indice, w_adapt, w_cont) + energia_crisp[y, x]
+        energia_interna_adaptativa(curva, indice, w_adapt, w_cont)
+        + energia_crisp[numba.int32(y), numba.int32(x)]
     )
 
 
+@numba.jit(nopython=True, parallel=True)
 def minimiza_energia(
     curva: np.ndarray,
     indice: int,
@@ -112,24 +116,27 @@ def minimiza_energia(
     assert area_de_busca % 2 == 1 and area_de_busca > 0, "Area de busca deve ser impar"
 
     amplitude_de_indices = np.arange(-(area_de_busca // 2), area_de_busca // 2 + 1)
-    possiveis_pontos = (
-        np.dstack(np.meshgrid(amplitude_de_indices, amplitude_de_indices)).reshape(
-            area_de_busca**2, 2
-        )
-        + curva[indice]
+    deslocamentos = np.array(
+        [[dx, dy] for dx in amplitude_de_indices for dy in amplitude_de_indices]
     )
+    possiveis_pontos = deslocamentos + curva[indice]
 
     energias_calculadas = np.zeros(area_de_busca**2)
 
-    for i, ponto_candidato in enumerate(possiveis_pontos):
+    for i in numba.prange(area_de_busca**2):
         curva_modificada = curva.copy()
+        ponto_candidato = possiveis_pontos[i]
         curva_modificada[indice] = ponto_candidato
         energia = energia_total(
-            curva_modificada, indice, energia_crisp, w_adapt=w_adapt, w_cont=w_cont
+            curva_modificada,
+            numba.int32(indice),
+            energia_crisp,
+            w_adapt=w_adapt,
+            w_cont=w_cont,
         )
 
         energias_calculadas[i] = energia
 
-    melhor_energia_indice = np.argmin(energias_calculadas)
+    melhor_energia_indice = np.argmax(energias_calculadas)
 
     return possiveis_pontos[melhor_energia_indice]
