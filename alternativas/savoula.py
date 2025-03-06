@@ -9,7 +9,12 @@ def aplicar_sauvola(imagem, tamanho_janela=171, k=0.02,
                                   tamanho_kernel=3,
                                   iteracoes_morfologia=1) -> tuple:
     """
-    Aplica método de Sauvola para segmentação adaptativa.
+    Aplica método de Sauvola para segmentação adaptativa. É uma técnica
+    de limiarização local útil para imagens que não são uniformes, especialmente
+    para reconhecimento de texto. Ao invés de calcular um único limiar global
+    para a imagem inteira, vários limiares são calculados para todos os pixels
+    utilizando fórmulas específicas que levam em conta a média e o desvio-padrão
+    para cada vizinhança local.
 
     args:
         imagem: np.ndarray - Imagem de entrada (em escala de cinza).

@@ -6,7 +6,9 @@ def aplicar_limiarizacao_media_movel(imagem, n=171, b=0.8,
                                      aplicar_interpolacao=True) -> tuple:
     """
     Recebe uma imagem em escala de cinza, aplica limiarização usando
-    média móvel e remove o fundo da imagem.
+    média móvel e remove o fundo da imagem. É um caso especial do método
+    de limiarização local utilizando média móvel, calculada para cada
+    ponto da imagem.
 
     args:
         imagem: np.ndarray - Imagem de entrada (em escala de cinza).
