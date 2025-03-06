@@ -39,6 +39,7 @@ def energia_externa(
     return energia
 
 
+@numba.njit
 def energia_interna_adaptativa(
     curva: np.ndarray, indice: int, w_adapt: float = 0.1, w_cont: float = 0.6
 ) -> np.floating:
@@ -56,9 +57,10 @@ def energia_interna_adaptativa(
     """
     adaptativa = w_adapt * forca_adaptativa(curva, indice)
     continuidade = w_cont * forca_continuidade(curva, indice)
-    return adaptativa + continuidade
+    return np.floating(adaptativa + continuidade)
 
 
+@numba.jit
 def energia_total(
     curva: np.ndarray,
     indice: int,
@@ -81,10 +83,12 @@ def energia_total(
     """
     x, y = curva[indice]
     return np.float64(
-        energia_interna_adaptativa(curva, indice, w_adapt, w_cont) + energia_crisp[y, x]
+        energia_interna_adaptativa(curva, indice, w_adapt, w_cont)
+        + energia_crisp[numba.int32(y), numba.int32(x)]
     )
 
 
+@numba.jit(nopython=True, parallel=True)
 def minimiza_energia(
     curva: np.ndarray,
     indice: int,
