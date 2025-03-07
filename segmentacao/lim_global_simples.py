@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from carregar import carregar_imagem
 
 def lim_global_simples(img: np.ndarray) -> np.ndarray:
     """
@@ -21,3 +22,11 @@ def lim_global_simples(img: np.ndarray) -> np.ndarray:
     img_limiarizada = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     cv2.drawContours(img_limiarizada, contornos_filtrados, -1, (0, 0, 255), 1)
     return img_limiarizada
+
+
+img = carregar_imagem('data/pulmao2/88.dcm')
+img_lim = lim_global_simples(img)
+cv2.imshow('Imagem Normal', img)
+cv2.imshow('Imagem Limiarizada', img_lim)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
