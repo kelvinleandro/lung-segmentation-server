@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-
+from carregar import carregar_imagem
 
 def lim_global_simples(img: np.ndarray) -> np.ndarray:
     """
@@ -16,10 +16,10 @@ def lim_global_simples(img: np.ndarray) -> np.ndarray:
     img = cv2.GaussianBlur(img, (5, 5), 0)
 
     # novas imagens são criadas
-    img = np.zeros_like(img)
     img_bin = np.zeros_like(img)
 
     _, img_bin = cv2.threshold(img, -500, 255, cv2.THRESH_BINARY)  # aplicada limiar
+    img = np.zeros_like(img)
     img_bin = np.uint8(img_bin * 255)
     img = img.astype(np.uint8)  # construção de nova imagem
 
@@ -36,7 +36,8 @@ def lim_global_simples(img: np.ndarray) -> np.ndarray:
 
     # contorno é desenhado na imagem
     img_limiarizada = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-    cv2.drawContours(img_limiarizada, contornos_filtrados, -1, (255, 0, 0), 1)
+    cv2.drawContours(img_limiarizada, contornos_filtrados, -1, (0, 0, 255), 1)
     img_limiarizada = cv2.cvtColor(img_limiarizada, cv2.COLOR_BGR2GRAY)
 
     return img_limiarizada
+
