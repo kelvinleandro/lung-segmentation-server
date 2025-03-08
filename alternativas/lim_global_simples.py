@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-from carregar import carregar_imagem
+from segmentacao.carregar import carregar_imagem
 
 def lim_global_simples(img: np.ndarray) -> np.ndarray:
     """
