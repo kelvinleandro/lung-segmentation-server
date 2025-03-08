@@ -1,43 +1,32 @@
 import numpy as np
 import cv2
-from segmentacao.carregar import carregar_imagem
+from segmentacao.remove_fundo import remove_fundo
 
-def lim_global_simples(img: np.ndarray) -> np.ndarray:
+
+def lim_global_simples(img: np.ndarray) -> tuple:
     """
-    Limiarização global simples.
+    Traça o contorno do pulmão da imagem utilizando Limiarização global simples.
 
     args:
         img: np.ndarray - Imagem em tons de cinza
     return:
-        np.ndarray - Imagem limiarizada
+        tuple:
+            - np.ndarray: Imagem com os novos contornos preenchidos em vermelho.
+            - dict: Dicionário onde cada chave é uma string (e.g., "contorno_0")
+                    e o valor é o contorno válido.
     """
 
     # imagem é filtrada com um filtro gaussiano
     img = cv2.GaussianBlur(img, (5, 5), 0)
 
+
     # novas imagens são criadas
     img_bin = np.zeros_like(img)
+    img_bin = img_bin.astype(np.uint8)
 
     _, img_bin = cv2.threshold(img, -500, 255, cv2.THRESH_BINARY)  # aplicada limiar
-    img = np.zeros_like(img)
-    img_bin = np.uint8(img_bin * 255)
-    img = img.astype(np.uint8)  # construção de nova imagem
+    img_bin_invertida = (255 - img_bin).astype(np.uint8) # inverte a imagem binária
 
-    # contornos traçados
-    contornos, _ = cv2.findContours(img_bin, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    # contornos filtrados
-    contornos_filtrados = [cnt for cnt in contornos if cv2.contourArea(cnt) > 1200]
-    contornos_filtrados = sorted(contornos_filtrados, key=cv2.contourArea, reverse=True)
-
-    # contorno do corpo é removido
-    if len(contornos_filtrados) > 2:
-        contornos_filtrados = contornos_filtrados[1:3]
-
-    # contorno é desenhado na imagem
-    img_limiarizada = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-    cv2.drawContours(img_limiarizada, contornos_filtrados, -1, (0, 0, 255), 1)
-    img_limiarizada = cv2.cvtColor(img_limiarizada, cv2.COLOR_BGR2GRAY)
-
-    return img_limiarizada
+    return remove_fundo(img_bin_invertida)
 

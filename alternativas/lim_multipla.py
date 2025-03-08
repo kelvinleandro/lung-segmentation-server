@@ -1,14 +1,11 @@
-import cv2
 import numpy as np
 from segmentacao.remove_fundo import remove_fundo
-from segmentacao.carregar import carregar_imagem
-import alternativas.hu_para_cinza as hu
-import matplotlib.pyplot as plt
 
 
 def classificar_pixel(pixel_value: int) -> int:
     """
-    Classifica o valor de cada pixel com base no intervalo de Hounsfield Units (HU) convertido para escala de cinza.
+    Classifica o valor de cada pixel com base no intervalo de Hounsfield Units (HU)
+    convertido para escala de cinza.
 
     Parâmetros:
         pixel_value (int): Valor do pixel em HU (intensidade da imagem).
@@ -57,7 +54,8 @@ def limiarizacao_multipla(imagem_cinza: np.ndarray) -> tuple:
 
     Retorna:
         tuple:
-            np.ndarray: Imagem com classificação dos pixels com base nos intervalos de UH.
+            np.ndarray: Imagem com classificação dos pixels com base nos intervalos
+                        de UH.
             dictionary: Dicionário com os contornos válidos relativos ao pulmão.
 
     """

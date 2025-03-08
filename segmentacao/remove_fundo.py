@@ -16,7 +16,8 @@ def remove_fundo(
     Retorna:
         tuple:
             - np.ndarray: Imagem com os novos contornos preenchidos em vermelho.
-            - dict: Dicionário onde cada chave é uma string (e.g., "contorno_0") e o valor é o contorno válido.
+            - dict: Dicionário onde cada chave é uma string (e.g., "contorno_0")
+                    e o valor é o contorno válido.
     """
     # Encontrar contornos na máscara
     contornos, _ = cv2.findContours(mascara, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
