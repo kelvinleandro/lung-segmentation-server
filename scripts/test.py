@@ -5,9 +5,11 @@ import numpy as np
 import cv2
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
-img = "./data/pulmao2/100.dcm"
+img = "./data/pulmao2/80.dcm"
+
+# %
 
 mca = MCACrisp(
     img,
@@ -15,12 +17,14 @@ mca = MCACrisp(
     360,
     0,
     256,
-    quantidade_pixels=60,
-    raio=60,
+    quantidade_pixels=30,
+    raio=30,
     w_cont=0.6,
-    w_adapt=0.3,
+    w_adapt=0.1,
     area_de_busca=9,
-    d_max=5,
+    d_max=10,
+    alpha=20,
+    early_stop=0.003,
 )
 
 
@@ -64,9 +68,9 @@ def create_gif(curves, image_path, output_gif_path, duration=100):
 
 
 curves = []
-for curva in mca.process():
+for curva in mca.process(max_iterations=1000):
     curves.append(curva)
 
 # Create a GIF from the collected curves
 output_gif_path = "output.gif"
-create_gif(curves, img, output_gif_path, duration=100)
+create_gif(curves, img, output_gif_path, duration=20)
