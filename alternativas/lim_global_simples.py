@@ -19,14 +19,11 @@ def lim_global_simples(img: np.ndarray) -> tuple:
     # imagem é filtrada com um filtro gaussiano
     img = cv2.GaussianBlur(img, (5, 5), 0)
 
-
     # novas imagens são criadas
     img_bin = np.zeros_like(img)
     img_bin = img_bin.astype(np.uint8)
 
     _, img_bin = cv2.threshold(img, -500, 255, cv2.THRESH_BINARY)  # aplicada limiar
-    img_bin_invertida = (255 - img_bin).astype(np.uint8) # inverte a imagem binária
-
+    img_bin_invertida = (255 - img_bin).astype(np.uint8)  # inverte a imagem binária
 
     return remove_fundo(img_bin_invertida)
-

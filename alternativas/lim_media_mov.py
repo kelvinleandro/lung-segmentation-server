@@ -2,8 +2,10 @@ import cv2
 import numpy as np
 from segmentacao.remove_fundo import remove_fundo
 
-def aplicar_limiarizacao_media_movel(imagem, n=171, b=0.8,
-                                     aplicar_interpolacao=True) -> tuple:
+
+def aplicar_limiarizacao_media_movel(
+    imagem, n=171, b=0.8, aplicar_interpolacao=True
+) -> tuple:
     """
     Recebe uma imagem em escala de cinza, aplica limiarização usando
     média móvel e remove o fundo da imagem.
@@ -44,10 +46,14 @@ def aplicar_limiarizacao_media_movel(imagem, n=171, b=0.8,
         limiarizada[y, :] = np.where(linha > limiar, 255, 0)
 
     if aplicar_interpolacao:
-        limiarizada = cv2.resize(limiarizada, None, fx=1.2, fy=1.2,
-                                    interpolation=cv2.INTER_CUBIC)
-        limiarizada = cv2.resize(limiarizada, (imagem.shape[1], imagem.shape[0]),
-                                    interpolation=cv2.INTER_AREA)
+        limiarizada = cv2.resize(
+            limiarizada, None, fx=1.2, fy=1.2, interpolation=cv2.INTER_CUBIC
+        )
+        limiarizada = cv2.resize(
+            limiarizada,
+            (imagem.shape[1], imagem.shape[0]),
+            interpolation=cv2.INTER_AREA,
+        )
 
     imagem_limiarizada_inv = cv2.bitwise_not(limiarizada)
 

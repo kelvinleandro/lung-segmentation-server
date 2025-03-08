@@ -2,9 +2,15 @@ import cv2
 import numpy as np
 from segmentacao.remove_fundo import remove_fundo
 
-def aplicar_limiarizacao_propriedades(imagem, tamanho_janela=151, a=1.0, b=0.5,
-                                       usar_media_global=False,
-                                       aplicar_interpolacao=True) -> tuple:
+
+def aplicar_limiarizacao_propriedades(
+    imagem,
+    tamanho_janela=151,
+    a=1.0,
+    b=0.5,
+    usar_media_global=False,
+    aplicar_interpolacao=True,
+) -> tuple:
     """
     Aplica limiarização variável baseada na média e no desvio padrão locais.
 
@@ -46,11 +52,14 @@ def aplicar_limiarizacao_propriedades(imagem, tamanho_janela=151, a=1.0, b=0.5,
             limiarizada[y, x] = 255 if imagem[y, x] > Txy else 0
 
     if aplicar_interpolacao:
-        limiarizada = cv2.resize(limiarizada, None, fx=1.2, fy=1.2,
-                                 interpolation=cv2.INTER_CUBIC)
-        limiarizada = cv2.resize(limiarizada, (limiarizada.shape[1],
-                                               limiarizada.shape[0]),
-                                 interpolation=cv2.INTER_AREA)
+        limiarizada = cv2.resize(
+            limiarizada, None, fx=1.2, fy=1.2, interpolation=cv2.INTER_CUBIC
+        )
+        limiarizada = cv2.resize(
+            limiarizada,
+            (limiarizada.shape[1], limiarizada.shape[0]),
+            interpolation=cv2.INTER_AREA,
+        )
 
     imagem_limiarizada_inv = cv2.bitwise_not(limiarizada)
 

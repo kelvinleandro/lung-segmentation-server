@@ -1,10 +1,15 @@
 import cv2
 import numpy as np
 
-def aplicar_filtros(imagem: np.ndarray, aplicar_desfoque_media=False,
-                    aplicar_desfoque_gaussiano=False,
-                    aplicar_desfoque_mediana=False,
-                    tamanho_kernel=5, sigma=0) -> np.ndarray:
+
+def aplicar_filtros(
+    imagem: np.ndarray,
+    aplicar_desfoque_media=False,
+    aplicar_desfoque_gaussiano=False,
+    aplicar_desfoque_mediana=False,
+    tamanho_kernel=5,
+    sigma=0,
+) -> np.ndarray:
     """
     Aplica filtros de suavização na imagem.
 
@@ -23,12 +28,14 @@ def aplicar_filtros(imagem: np.ndarray, aplicar_desfoque_media=False,
     imagem_processada = imagem.copy()
 
     if aplicar_desfoque_gaussiano:
-        imagem_processada = cv2.GaussianBlur(imagem_processada, (tamanho_kernel,
-                                                                 tamanho_kernel), sigma)
+        imagem_processada = cv2.GaussianBlur(
+            imagem_processada, (tamanho_kernel, tamanho_kernel), sigma
+        )
 
     if aplicar_desfoque_media:
-        imagem_processada = cv2.blur(imagem_processada, (tamanho_kernel,
-                                                         tamanho_kernel))
+        imagem_processada = cv2.blur(
+            imagem_processada, (tamanho_kernel, tamanho_kernel)
+        )
 
     if aplicar_desfoque_mediana:
         imagem_processada = cv2.medianBlur(imagem_processada, tamanho_kernel)
