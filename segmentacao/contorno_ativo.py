@@ -17,11 +17,16 @@ logger = logging.getLogger(__name__)
 
 
 @numba.njit(parallel=True)
-def minimize_curve(curva, energia_crisp, area_de_busca):
+def minimize_curve(curva, energia_crisp, area_de_busca, w_adapt, w_cont):
     nova_curva = np.copy(curva)
     for i in numba.prange(len(nova_curva)):
         nova_curva[i] = minimiza_energia(
-            curva, i, energia_crisp, area_de_busca=area_de_busca
+            curva,
+            i,
+            energia_crisp,
+            area_de_busca=area_de_busca,
+            w_adapt=w_adapt,
+            w_cont=w_cont,
         )
     return nova_curva
 
@@ -38,9 +43,10 @@ class MCACrisp:
         raio=30,
         w_cont=0.6,
         w_adapt=0.1,
-        d_max=10,
+        d_max=10.0,
         area_de_busca=9,
         alpha=20,
+        early_stop=0.2,
     ):
         self.img = carregar_imagem(image_path)
         self.centro = crisp_inicial(self.img, y_min, y_max, x_min, x_max)
@@ -55,6 +61,7 @@ class MCACrisp:
         self.energia_crisp = energia_externa(self.img, self.probabilidades)
         self.area_de_busca = area_de_busca
         self.d_max = d_max
+        self.early_stop = early_stop
         self.curvas = []
 
     @staticmethod
@@ -63,7 +70,13 @@ class MCACrisp:
         return np.sum(distances)
 
     def step(self):
-        self.curva = minimize_curve(self.curva, self.energia_crisp, self.area_de_busca)
+        self.curva = minimize_curve(
+            self.curva,
+            self.energia_crisp,
+            self.area_de_busca,
+            self.w_adapt,
+            self.w_cont,
+        )
         self.curva = remover_pontos(self.curva, alpha=self.alpha)
         self.curva = adicionar_pontos(self.curva, imagem=self.img, d_max=self.d_max)
         return self.curva
@@ -83,9 +96,14 @@ class MCACrisp:
                 current_perim = self.perim(self.curva)
                 last_perim = self.perim(self.curvas[-2])
 
-                if len(curvas) > 50 and np.isclose(current_perim, last_perim, atol=1):
+                if (
+                    len(curvas) > 50
+                    and np.abs(current_perim - last_perim) / last_perim
+                    < self.early_stop
+                ):
                     if self.area_de_busca > 1:
                         self.area_de_busca -= 2
+                        self.d_max -= 1
                         logger.info(f"Adjusted area_de_busca to {self.area_de_busca}")
                     else:
                         logger.info("Convergence reached, stopping early")
