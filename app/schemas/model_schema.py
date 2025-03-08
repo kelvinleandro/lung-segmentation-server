@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Any
 
 from pydantic import BaseModel
 
@@ -10,3 +10,8 @@ class Point(BaseModel):
 
 class SegmentedPointsResponse(BaseModel):
     points: List[Point]
+
+class SegmentationRequest(BaseModel):
+    preprocessing_params: Dict[str, Any]
+    segmentation_params: Dict[str, Any]
+    postprocessing_params: Dict[str, Any]
