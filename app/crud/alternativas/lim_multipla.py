@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 from crud.alternativas.remove_fundo import remove_fundo
+from crud.alternativas.carregar import carregar_imagem
+import crud.alternativas.hu_para_cinza as hu
 import matplotlib.pyplot as plt
 
 
@@ -73,6 +75,7 @@ def limiarizacao_multipla(
         np.ndarray: Imagem com classificação dos pixels com base nos intervalos de HU.
 
     """
+
     # Criar uma imagem para armazenar as classes
     imagem_classes = np.zeros(imagem_cinza.shape, dtype=np.uint8)
 
@@ -124,4 +127,4 @@ def limiarizacao_multipla(
     if ativacao_nao_classificado:
         mascara_pulmao[mascara_pulmao == 0] = 255
 
-    return remove_fundo(mascara_pulmao)
+    return mascara_pulmao

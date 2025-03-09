@@ -21,8 +21,7 @@ def aplicar_filtros(imagem: np.ndarray, aplicar_desfoque_media=False,
         np.ndarray - Imagem resultante com os filtros aplicados.
     """
     imagem_processada = imagem.copy()
-    tamanho_kernel=int(tamanho_kernel)
-    sigma=int(sigma)
+
     if aplicar_desfoque_gaussiano:
         imagem_processada = cv2.GaussianBlur(imagem_processada, (tamanho_kernel,
                                                                  tamanho_kernel), sigma)

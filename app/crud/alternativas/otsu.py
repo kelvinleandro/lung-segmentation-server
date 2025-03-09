@@ -27,4 +27,4 @@ def aplicar_otsu(imagem: np.ndarray) -> tuple:
         imagem, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
     )
 
-    return remove_fundo(mascara_pulmao)
+    return mascara_pulmao

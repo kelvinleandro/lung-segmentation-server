@@ -15,6 +15,7 @@ from crud.alternativas.imagem_para_base64 import imagem_para_base64
 from crud.alternativas.to_hu import converte_para_hu
 from crud.alternativas.hu_para_cinza import converter_hu_para_cinza
 from crud.alternativas.converte_str_json import converte_param_preprocess, converter_parametros_para_tipos
+from crud.alternativas.remove_fundo import remove_fundo
 
 from crud.alternativas.watershed import aplicar_watershed
 from crud.alternativas.lim_media_mov import aplicar_limiarizacao_media_movel
@@ -90,12 +91,14 @@ async def segment_dicom(
             print(f"iteracoes_dilatacao={segmentation_params['iteracoes_dilatacao']}")
             print(f"fator_dist_transform={segmentation_params['fator_dist_transform']}")
             
-            todos_os_contornos,contornos_validos_dict = aplicar_watershed(pixel_array,
+             
+            mascara_segmentada= aplicar_watershed(pixel_array,
                 segmentation_params['limiar'],segmentation_params['aplicar_interpolacao'],
                 segmentation_params['aplicar_morfologia'], segmentation_params['tamanho_kernel'],
                 segmentation_params['iteracoes_morfologia'],segmentation_params['iteracoes_dilatacao'],
                 segmentation_params['fator_dist_transform'])
-
+            mascara_segmentada= aplicar_watershed(pixel_array,segmentation_params)
+            todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
         elif method == "lim_media_mov":
             missing_params = [key for key, value in segmentation_params.items() if value is None]
             
@@ -109,9 +112,9 @@ async def segment_dicom(
             print(f"b={segmentation_params['b']}")
             print(f"aplicar_interpolacao={segmentation_params['aplicar_interpolacao']}")
 
-            todos_os_contornos,contornos_validos_dict = aplicar_limiarizacao_media_movel(
+            mascara_segmentada = aplicar_limiarizacao_media_movel(
                 pixel_array, segmentation_params['n'],segmentation_params['b'],segmentation_params['aplicar_interpolacao'])
-        
+            todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
         elif method == "lim_multipla":
             missing_params = [key for key, value in segmentation_params.items() if value is None]
 
@@ -131,14 +134,14 @@ async def segment_dicom(
             print(f"ativacao_nao_aeradas={segmentation_params['ativacao_nao_aeradas']}")
             print(f"ativacao_osso={segmentation_params['ativacao_osso']}")
             print(f"ativacao_nao_classificado={segmentation_params['ativacao_nao_classificado']}")
-            todos_os_contornos,contornos_validos_dict = limiarizacao_multipla(
+            mascara_segmentada = limiarizacao_multipla(
                 pixel_array, segmentation_params['lim_hiperaeradas'],
                 segmentation_params['lim_normalmente_aeradas'],segmentation_params['lim_pouco_aeradas'],
                 segmentation_params['lim_nao_aeradas'],segmentation_params['lim_osso'],
                 segmentation_params['ativacao_hiperaeradas'],segmentation_params['ativacao_normalmente_aeradas'],
                 segmentation_params['ativacao_pouco_aeradas'],segmentation_params['ativacao_nao_aeradas'],
                 segmentation_params['ativacao_osso'],segmentation_params['ativacao_nao_classificado'])
-
+            todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
         elif method == "lim_prop_locais":
             missing_params = [key for key, value in segmentation_params.items() if value is None]
 
@@ -152,11 +155,11 @@ async def segment_dicom(
             print(f"b={segmentation_params['b']}")
             print(f"usar_media_global={segmentation_params['usar_media_global']}")
             print(f"aplicar_interpolacao={segmentation_params['aplicar_interpolacao']}")
-            todos_os_contornos,contornos_validos_dict = aplicar_limiarizacao_propriedades(
+            mascara_segmentada = aplicar_limiarizacao_propriedades(
                 pixel_array, segmentation_params['tamanho_janela'],
                 segmentation_params['a'],segmentation_params['b'],
                 segmentation_params['usar_media_global'],segmentation_params['aplicar_interpolacao'])
-
+            todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
         elif method == "sauvola":
            missing_params = [key for key, value in segmentation_params.items() if value is None]
 
@@ -171,12 +174,12 @@ async def segment_dicom(
            print(f"aplicar_morfologia={segmentation_params['aplicar_morfologia']}")
            print(f"tamanho_kernel={segmentation_params['tamanho_kernel']}")
            print(f"iteracoes_morfologia={segmentation_params['iteracoes_morfologia']}")
-           todos_os_contornos,contornos_validos_dict = aplicar_sauvola(
+           mascara_segmentada = aplicar_sauvola(
                pixel_array,segmentation_params['tamanho_janela'],
                 segmentation_params['k'],segmentation_params['aplicar_interpolacao'],
                 segmentation_params['aplicar_morfologia'],segmentation_params['tamanho_kernel'],
                 segmentation_params['iteracoes_morfologia'])
-        
+           todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
         elif method == "divisao_e_fusao":
             missing_params = [key for key, value in segmentation_params.items() if value is None]
 
@@ -188,24 +191,23 @@ async def segment_dicom(
             print(f"limite_var={segmentation_params['limite_var']}")
             print(f"limite_media={segmentation_params['limite_media']}")
             print(f"referencia_media={segmentation_params['referencia_media']}")    
-            todos_os_contornos,contornos_validos_dict = aplicar_divisao_e_fusao(
+            mascara_segmentada = aplicar_divisao_e_fusao(
                 pixel_array,segmentation_params['limite_var'],
                 segmentation_params['limite_media'],segmentation_params['referencia_media'])  
-
+            todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
         elif method == "otsu":
-            todos_os_contornos, contornos_validos_dict = aplicar_otsu(pixel_array)
-        
+            mascara_segmentada = aplicar_otsu(pixel_array)
+            todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Método de segmentação inválido. Use 'watershed' ou 'lim_media_mov' ou 'lim_multipla' ou 'lim_prop_locais', 'sauvola', 'otsu' ou 'divisao_e_fusao'.",
             )
-        #todos_os_contornos=todos_os_contornos.tolist()
-       # contornos_validos_dict=contornos_validos_dict.tolist()
+        
         pixel_array=imagem_para_base64(pixel_array)
         print("Todos os contornos:", todos_os_contornos)
         print("Contornos válidos:", contornos_validos_dict)
-        todos_os_contornos=""
+        
         return JSONResponse({"imagem_pre_processada":pixel_array, "todos_os_contornos":todos_os_contornos, "contornos_validos":contornos_validos_dict})
 
     except Exception as e:

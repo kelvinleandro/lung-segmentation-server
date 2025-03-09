@@ -2,12 +2,13 @@ import cv2
 import numpy as np
 from crud.alternativas.remove_fundo import remove_fundo
 
-
 def aplicar_limiarizacao_media_movel(imagem, n=171, b=0.8,
                                      aplicar_interpolacao=True) -> tuple:
     """
     Recebe uma imagem em escala de cinza, aplica limiarização usando
-    média móvel e remove o fundo da imagem.
+    média móvel e remove o fundo da imagem. É um caso especial do método
+    de limiarização local utilizando média móvel, calculada para cada
+    ponto da imagem.
 
     args:
         imagem: np.ndarray - Imagem de entrada (em escala de cinza).
@@ -21,6 +22,7 @@ def aplicar_limiarizacao_media_movel(imagem, n=171, b=0.8,
             dict: Dicionário onde cada chave é uma string (e.g., "contorno_0")
                   e o valor é o contorno válido.
     """
+
     altura, largura = imagem.shape
     limiarizada = np.zeros_like(imagem, dtype=np.uint8)
 
@@ -51,4 +53,4 @@ def aplicar_limiarizacao_media_movel(imagem, n=171, b=0.8,
 
     imagem_limiarizada_inv = cv2.bitwise_not(limiarizada)
 
-    return remove_fundo(imagem_limiarizada_inv)
+    return imagem_limiarizada_inv
