@@ -3,7 +3,6 @@ import numpy as np
 from crud.alternativas.remove_fundo import remove_fundo
 
 
-
 def criterio_homogeneidade(region: np.ndarray, limite_var: float) -> bool:
     """Verifica se uma região é homogênea com base na variância."""
     return np.var(region) < limite_var
@@ -15,7 +14,7 @@ def criterio_media(region: np.ndarray, referencia: float, limite_media: float) -
 
 
 def aplicar_divisao_e_fusao(
-    imagem: np.ndarray, limite_var: int, limite_media: int, referencia_media: int
+    imagem: np.ndarray, limite_var=40, limite_media=40, referencia_media= 5
 ) -> np.ndarray:
     """
     Aplica o algoritmo de Divisão e Fusão de Regiões para segmentação de pulmões.
@@ -75,4 +74,4 @@ def aplicar_divisao_e_fusao(
         segmentos, cv2.MORPH_OPEN, kernel, iterations=2
     )  # Remove ruídos pequenos
 
-    return remove_fundo(segmentos)
+    return segmentos

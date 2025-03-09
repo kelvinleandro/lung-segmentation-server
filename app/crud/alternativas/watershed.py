@@ -10,7 +10,14 @@ def aplicar_watershed(imagem: np.ndarray, limiar=60,
                       iteracoes_dilatacao=1,
                       fator_dist_transform=0.3) -> np.ndarray:
     """
-    Aplica o algoritmo Watershed para segmentação.
+    Aplica o algoritmo watershed para segmentação. Utiliza o conceito de bacias
+    hidrográficas (watersheds), usando uma topologia de três dimensões: duas
+    coordenadas especiais x intensidade. Consideram-se três tipos de pontos:
+    os pontos que pertencem a um mínimo regional; pontos em que uma gota
+    d'água, se despejada na localização de algum desses pontos, cairia quase
+    que com certeza em um mínimo simples; e pontos em que a água tem a mesma
+    probabilidade de cair em mais de um mínimo desses (linhas de divisão).
+    O objetivo do algoritmo é encontrar essas linhas.
 
     args:
         imagem (np.ndarray): Imagem de entrada em escala de cinza.
@@ -74,4 +81,4 @@ def aplicar_watershed(imagem: np.ndarray, limiar=60,
                                                               imagem.shape[0]),
                                         interpolation=cv2.INTER_AREA)
 
-    return remove_fundo(mascara_segmentada)
+    return mascara_segmentada
