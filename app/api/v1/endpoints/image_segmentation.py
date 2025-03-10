@@ -61,140 +61,155 @@ async def segment_dicom(
         imagem_hu=converte_para_hu(pixel_array, ds)
         pixel_array=converter_hu_para_cinza(imagem_hu, hu_min=-1000, hu_max=2000)
 
-        missing_params = [key for key, value in preprocessing_params.items() if value is None]
+        if preprocessing_params:
+            missing_params = [key for key, value in preprocessing_params.items() if value is None]
 
-        if missing_params:
-            raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
+            if missing_params:
+                raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
 
-        preprocessing_params=converte_param_preprocess(preprocessing_params)
-        pixel_array=aplicar_filtros(pixel_array, preprocessing_params)
+            preprocessing_params=converte_param_preprocess(preprocessing_params)
+            pixel_array=aplicar_filtros(pixel_array, 
+                preprocessing_params['aplicar_desfoque_gaussiano'],preprocessing_params['aplicar_desfoque_media'],
+                preprocessing_params['aplicar_desfoque_mediana'],preprocessing_params['tamanho_kernel'],
+                preprocessing_params['sigma'])
 
         if method == "segmentation":
             segmented_points = segment_image(pixel_array)
 
         elif method == "watershed":
-            missing_params = [key for key, value in segmentation_params.items() if value is None]
+            if segmentation_params:
+                missing_params = [key for key, value in segmentation_params.items() if value is None]
 
-            if missing_params:
-                raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
+                if missing_params:
+                    raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
             
-            segmentation_params=converter_parametros_para_tipos(segmentation_params)
-            print(f"limiar={segmentation_params['limiar']}")
-            print(f"aplicar_interpolacao={segmentation_params['aplicar_interpolacao']}")
-            print(f"aplicar_morfologia={segmentation_params['aplicar_morfologia']}")
-            print(f"tamanho_kernel={segmentation_params['tamanho_kernel']}")
-            print(f"iteracoes_morfologia={segmentation_params['iteracoes_morfologia']}")
-            print(f"iteracoes_dilatacao={segmentation_params['iteracoes_dilatacao']}")
-            print(f"fator_dist_transform={segmentation_params['fator_dist_transform']}")
+                segmentation_params=converter_parametros_para_tipos(segmentation_params)
+                print(f"limiar={segmentation_params['limiar']}")
+                print(f"aplicar_interpolacao={segmentation_params['aplicar_interpolacao']}")
+                print(f"aplicar_morfologia={segmentation_params['aplicar_morfologia']}")
+                print(f"tamanho_kernel={segmentation_params['tamanho_kernel']}")
+                print(f"iteracoes_morfologia={segmentation_params['iteracoes_morfologia']}")
+                print(f"iteracoes_dilatacao={segmentation_params['iteracoes_dilatacao']}")
+                print(f"fator_dist_transform={segmentation_params['fator_dist_transform']}")
             
              
-            mascara_segmentada= aplicar_watershed(pixel_array,
-                segmentation_params['limiar'],segmentation_params['aplicar_interpolacao'],
-                segmentation_params['aplicar_morfologia'], segmentation_params['tamanho_kernel'],
-                segmentation_params['iteracoes_morfologia'],segmentation_params['iteracoes_dilatacao'],
-                segmentation_params['fator_dist_transform'])
-            mascara_segmentada= aplicar_watershed(pixel_array,segmentation_params)
-            todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+                mascara_segmentada= aplicar_watershed(pixel_array,
+                    segmentation_params['limiar'],segmentation_params['aplicar_interpolacao'],
+                    segmentation_params['aplicar_morfologia'], segmentation_params['tamanho_kernel'],
+                    segmentation_params['iteracoes_morfologia'],segmentation_params['iteracoes_dilatacao'],
+                    segmentation_params['fator_dist_transform'])
+                todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+        
         elif method == "lim_media_mov":
-            missing_params = [key for key, value in segmentation_params.items() if value is None]
+            if segmentation_params:
+                missing_params = [key for key, value in segmentation_params.items() if value is None]
             
-            if missing_params:
-                raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
-            segmentation_params=converter_parametros_para_tipos(segmentation_params)
+                if missing_params:
+                    raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
+                segmentation_params=converter_parametros_para_tipos(segmentation_params)
             
-            print(f"n={segmentation_params['n']}")
-            print(f"b={segmentation_params['b']}")
-            print(f"aplicar_interpolacao={segmentation_params['aplicar_interpolacao']}")
+                print(f"n={segmentation_params['n']}")
+                print(f"b={segmentation_params['b']}")
+                print(f"aplicar_interpolacao={segmentation_params['aplicar_interpolacao']}")
 
-            mascara_segmentada = aplicar_limiarizacao_media_movel(
-                pixel_array, segmentation_params['n'],segmentation_params['b'],segmentation_params['aplicar_interpolacao'])
-            todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+                mascara_segmentada = aplicar_limiarizacao_media_movel(
+                    pixel_array, segmentation_params['n'],segmentation_params['b'],segmentation_params['aplicar_interpolacao'])
+                todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+        
         elif method == "lim_multipla":
-            missing_params = [key for key, value in segmentation_params.items() if value is None]
+            if segmentation_params:
+                missing_params = [key for key, value in segmentation_params.items() if value is None]
 
-            if missing_params:
-                raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
-            segmentation_params=converter_parametros_para_tipos(segmentation_params)
-            print(f"lim_hiperaeradas={segmentation_params['lim_hiperaeradas']}")
-            print(f"lim_normalmente_aeradas={segmentation_params['lim_normalmente_aeradas']}")
-            print(f"lim_pouco_aeradas={segmentation_params['lim_pouco_aeradas']}")
-            print(f"lim_nao_aeradas={segmentation_params['lim_nao_aeradas']}")
-            print(f"lim_osso={segmentation_params['lim_osso']}")
-            print(f"ativacao_hiperaeradas={segmentation_params['ativacao_hiperaeradas']}")
-            print(f"ativacao_normalmente_aeradas={segmentation_params['ativacao_normalmente_aeradas']}")
-            print(f"ativacao_pouco_aeradas={segmentation_params['ativacao_pouco_aeradas']}")
-            print(f"ativacao_nao_aeradas={segmentation_params['ativacao_nao_aeradas']}")
-            print(f"ativacao_osso={segmentation_params['ativacao_osso']}")
-            print(f"ativacao_nao_classificado={segmentation_params['ativacao_nao_classificado']}")
-            mascara_segmentada = limiarizacao_multipla(
-                pixel_array, segmentation_params['lim_hiperaeradas'],
-                segmentation_params['lim_normalmente_aeradas'],segmentation_params['lim_pouco_aeradas'],
-                segmentation_params['lim_nao_aeradas'],segmentation_params['lim_osso'],
-                segmentation_params['ativacao_hiperaeradas'],segmentation_params['ativacao_normalmente_aeradas'],
-                segmentation_params['ativacao_pouco_aeradas'],segmentation_params['ativacao_nao_aeradas'],
-                segmentation_params['ativacao_osso'],segmentation_params['ativacao_nao_classificado'])
-            todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+                if missing_params:
+                    raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
+                segmentation_params=converter_parametros_para_tipos(segmentation_params)
+                print(f"lim_hiperaeradas={segmentation_params['lim_hiperaeradas']}")
+                print(f"lim_normalmente_aeradas={segmentation_params['lim_normalmente_aeradas']}")
+                print(f"lim_pouco_aeradas={segmentation_params['lim_pouco_aeradas']}")
+                print(f"lim_nao_aeradas={segmentation_params['lim_nao_aeradas']}")
+                print(f"lim_osso={segmentation_params['lim_osso']}")
+                print(f"ativacao_hiperaeradas={segmentation_params['ativacao_hiperaeradas']}")
+                print(f"ativacao_normalmente_aeradas={segmentation_params['ativacao_normalmente_aeradas']}")
+                print(f"ativacao_pouco_aeradas={segmentation_params['ativacao_pouco_aeradas']}")
+                print(f"ativacao_nao_aeradas={segmentation_params['ativacao_nao_aeradas']}")
+                print(f"ativacao_osso={segmentation_params['ativacao_osso']}")
+                print(f"ativacao_nao_classificado={segmentation_params['ativacao_nao_classificado']}")
+                mascara_segmentada = limiarizacao_multipla(
+                    pixel_array, segmentation_params['lim_hiperaeradas'],
+                    segmentation_params['lim_normalmente_aeradas'],segmentation_params['lim_pouco_aeradas'],
+                    segmentation_params['lim_nao_aeradas'],segmentation_params['lim_osso'],
+                    segmentation_params['ativacao_hiperaeradas'],segmentation_params['ativacao_normalmente_aeradas'],
+                    segmentation_params['ativacao_pouco_aeradas'],segmentation_params['ativacao_nao_aeradas'],
+                    segmentation_params['ativacao_osso'],segmentation_params['ativacao_nao_classificado'])
+                todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+        
         elif method == "lim_prop_locais":
-            missing_params = [key for key, value in segmentation_params.items() if value is None]
+            if segmentation_params:
+                missing_params = [key for key, value in segmentation_params.items() if value is None]
 
-            if missing_params:
-                raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
-            segmentation_params=converter_parametros_para_tipos(segmentation_params)
-            print(f"tamanho_janela={segmentation_params['tamanho_janela']}")
-            print(f"a={segmentation_params['a']}")
-            print(f"b={segmentation_params['b']}")
-            print(f"usar_media_global={segmentation_params['usar_media_global']}")
-            print(f"aplicar_interpolacao={segmentation_params['aplicar_interpolacao']}")
-            mascara_segmentada = aplicar_limiarizacao_propriedades(
-                pixel_array, segmentation_params['tamanho_janela'],
-                segmentation_params['a'],segmentation_params['b'],
-                segmentation_params['usar_media_global'],segmentation_params['aplicar_interpolacao'])
-            todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+                if missing_params:
+                    raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
+                segmentation_params=converter_parametros_para_tipos(segmentation_params)
+                print(f"tamanho_janela={segmentation_params['tamanho_janela']}")
+                print(f"a={segmentation_params['a']}")
+                print(f"b={segmentation_params['b']}")
+                print(f"usar_media_global={segmentation_params['usar_media_global']}")
+                print(f"aplicar_interpolacao={segmentation_params['aplicar_interpolacao']}")
+                mascara_segmentada = aplicar_limiarizacao_propriedades(
+                    pixel_array, segmentation_params['tamanho_janela'],
+                    segmentation_params['a'],segmentation_params['b'],
+                    segmentation_params['usar_media_global'],segmentation_params['aplicar_interpolacao'])
+                todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+        
         elif method == "sauvola":
-           missing_params = [key for key, value in segmentation_params.items() if value is None]
+           if segmentation_params:
+                missing_params = [key for key, value in segmentation_params.items() if value is None]
 
-           if missing_params:
-                raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
-           segmentation_params=converter_parametros_para_tipos(segmentation_params)
-           print(f"tamanho_janela={segmentation_params['tamanho_janela']}")
-           print(f"k={segmentation_params['k']}")
-           print(f"aplicar_interpolacao={segmentation_params['aplicar_interpolacao']}")
-           print(f"aplicar_morfologia={segmentation_params['aplicar_morfologia']}")
-           print(f"tamanho_kernel={segmentation_params['tamanho_kernel']}")
-           print(f"iteracoes_morfologia={segmentation_params['iteracoes_morfologia']}")
-           mascara_segmentada = aplicar_sauvola(
-               pixel_array,segmentation_params['tamanho_janela'],
-                segmentation_params['k'],segmentation_params['aplicar_interpolacao'],
-                segmentation_params['aplicar_morfologia'],segmentation_params['tamanho_kernel'],
-                segmentation_params['iteracoes_morfologia'])
-           todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+                if missing_params:
+                    raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
+                segmentation_params=converter_parametros_para_tipos(segmentation_params)
+                print(f"tamanho_janela={segmentation_params['tamanho_janela']}")
+                print(f"k={segmentation_params['k']}")
+                print(f"aplicar_interpolacao={segmentation_params['aplicar_interpolacao']}")
+                print(f"aplicar_morfologia={segmentation_params['aplicar_morfologia']}")
+                print(f"tamanho_kernel={segmentation_params['tamanho_kernel']}")
+                print(f"iteracoes_morfologia={segmentation_params['iteracoes_morfologia']}")
+                mascara_segmentada = aplicar_sauvola(
+                    pixel_array,segmentation_params['tamanho_janela'],
+                    segmentation_params['k'],segmentation_params['aplicar_interpolacao'],
+                    segmentation_params['aplicar_morfologia'],segmentation_params['tamanho_kernel'],
+                    segmentation_params['iteracoes_morfologia'])
+                todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+        
         elif method == "divisao_e_fusao":
-            missing_params = [key for key, value in segmentation_params.items() if value is None]
+            if segmentation_params:
+                missing_params = [key for key, value in segmentation_params.items() if value is None]
 
-            if missing_params:
-                raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
-            segmentation_params=converter_parametros_para_tipos(segmentation_params)
-            print(f"limite_var={segmentation_params['limite_var']}")
-            print(f"limite_media={segmentation_params['limite_media']}")
-            print(f"referencia_media={segmentation_params['referencia_media']}")    
-            mascara_segmentada = aplicar_divisao_e_fusao(
-                pixel_array,segmentation_params['limite_var'],
-                segmentation_params['limite_media'],segmentation_params['referencia_media'])  
-            todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+                if missing_params:
+                    raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
+                segmentation_params=converter_parametros_para_tipos(segmentation_params)
+                print(f"limite_var={segmentation_params['limite_var']}")
+                print(f"limite_media={segmentation_params['limite_media']}")
+                print(f"referencia_media={segmentation_params['referencia_media']}")    
+                mascara_segmentada = aplicar_divisao_e_fusao(
+                    pixel_array,segmentation_params['limite_var'],
+                    segmentation_params['limite_media'],segmentation_params['referencia_media'])  
+                todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+        
         elif method == "otsu":
             mascara_segmentada = aplicar_otsu(pixel_array)
             todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
@@ -204,12 +219,13 @@ async def segment_dicom(
                 detail="Método de segmentação inválido. Use 'watershed' ou 'lim_media_mov' ou 'lim_multipla' ou 'lim_prop_locais', 'sauvola', 'otsu' ou 'divisao_e_fusao'.",
             )
         
-        pixel_array=imagem_para_base64(pixel_array)
-        print("Todos os contornos:", todos_os_contornos)
-        print("Contornos válidos:", contornos_validos_dict)
+        if segmentation_params:
+            pixel_array=imagem_para_base64(pixel_array)
+            print("Todos os contornos:", todos_os_contornos)
+            print("Contornos válidos:", contornos_validos_dict)
         
-        return JSONResponse({"imagem_pre_processada":pixel_array, "todos_os_contornos":todos_os_contornos, "contornos_validos":contornos_validos_dict})
-
+            return JSONResponse({"imagem_pre_processada":pixel_array, "todos_os_contornos":todos_os_contornos, "contornos_validos":contornos_validos_dict})
+        return JSONResponse ({"imagem_pre_processada":{},"todos_os_contornos":{},"contornos_validos":{}})
     except Exception as e:
         stack_trace = traceback.format_exc()  # Captura a stack trace como string
         raise HTTPException(
