@@ -10,3 +10,4 @@ def test_lim_global_simples():
                           np.array([[0, 255],
                                     [0, 255]],
                                     dtype=np.uint8))
+
