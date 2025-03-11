@@ -7,9 +7,7 @@ from fastapi import APIRouter, File, HTTPException, Query, UploadFile, status, F
 from fastapi.responses import JSONResponse
 from pydicom.filebase import DicomBytesIO
 
-from crud.segmentation import (
-    segment_image,  # Funções genéricas de segmentação
-)
+from crud.segmentation import MCACrisp # Classe do método de segmentação principal
 
 from crud.alternativas.imagem_para_base64 import imagem_para_base64
 from crud.alternativas.to_hu import converte_para_hu
@@ -77,7 +75,40 @@ async def segment_dicom(
                 preprocessing_params['sigma'])
 
         if method == "segmentation":
-            segmented_points = segment_image(pixel_array)
+            missing_params = [key for key, value in preprocessing_params.items() if value is None]
+
+            if missing_params:
+                raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
+            
+            mca = MCACrisp(
+                imagem_hu=imagem_hu,y_min=180,y_max=360,
+                x_min=256,x_max=512,quantidade_pixels = segmentation_params['quantidade_pixels'],
+                raio=segmentation_params['raio'],w_cont=segmentation_params['w_cont'],
+                w_adapt=segmentation_params['w_adapt'],d_max=segmentation_params['d_max'],
+                area_de_busca=segmentation_params['area_de_busca'],alpha=segmentation_params['alpha'],
+                early_stop=segmentation_params['early_stop'])
+            
+            #segmentando o primeiro pulmao
+            for curva in mca.process(max_iterations=segmentation_params['max_iterations']):
+                pass    
+            contorno_0=mca.curvas[-1]
+            #contorno_0 = np.round(mca.curvas[-1]).astype(int) caso haja a necessidade da lista ser formada só por inteiros
+            
+            #segmentando o outro pulmao
+            mca.y_min=180
+            mca.y_max=360
+            mca.x_min=0
+            mca.x_max=256
+            for curva in mca.process(max_iterations=segmentation_params['max_iterations']):
+                pass    
+            contorno_1=mca.curvas[-1]
+            #contorno_1 = np.round(mca.curvas[-1]).astype(int) caso haja a necessidade da lista ser formada só por inteiros
+            contornos_validos = {"contorno_0":contorno_0,"contorno_1":contorno_1}
+            for key in contornos_validos:
+                contornos_validos[key] = contornos_validos[key].tolist()
+            todos_os_contornos = {}
 
         elif method == "watershed":
             if segmentation_params:
@@ -103,7 +134,7 @@ async def segment_dicom(
                     segmentation_params['aplicar_morfologia'], segmentation_params['tamanho_kernel'],
                     segmentation_params['iteracoes_morfologia'],segmentation_params['iteracoes_dilatacao'],
                     segmentation_params['fator_dist_transform'])
-                todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+                todos_os_contornos,contornos_validos=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
         
         elif method == "lim_media_mov":
             if segmentation_params:
@@ -121,7 +152,7 @@ async def segment_dicom(
 
                 mascara_segmentada = aplicar_limiarizacao_media_movel(
                     pixel_array, segmentation_params['n'],segmentation_params['b'],segmentation_params['aplicar_interpolacao'])
-                todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+                todos_os_contornos,contornos_validos=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
         
         elif method == "lim_multipla":
             if segmentation_params:
@@ -150,7 +181,7 @@ async def segment_dicom(
                     segmentation_params['ativacao_hiperaeradas'],segmentation_params['ativacao_normalmente_aeradas'],
                     segmentation_params['ativacao_pouco_aeradas'],segmentation_params['ativacao_nao_aeradas'],
                     segmentation_params['ativacao_osso'],segmentation_params['ativacao_nao_classificado'])
-                todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+                todos_os_contornos,contornos_validos=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
         
         elif method == "lim_prop_locais":
             if segmentation_params:
@@ -170,7 +201,7 @@ async def segment_dicom(
                     pixel_array, segmentation_params['tamanho_janela'],
                     segmentation_params['a'],segmentation_params['b'],
                     segmentation_params['usar_media_global'],segmentation_params['aplicar_interpolacao'])
-                todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+                todos_os_contornos,contornos_validos=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
         
         elif method == "sauvola":
            if segmentation_params:
@@ -192,7 +223,7 @@ async def segment_dicom(
                     segmentation_params['k'],segmentation_params['aplicar_interpolacao'],
                     segmentation_params['aplicar_morfologia'],segmentation_params['tamanho_kernel'],
                     segmentation_params['iteracoes_morfologia'])
-                todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+                todos_os_contornos,contornos_validos=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
         
         elif method == "divisao_e_fusao":
             if segmentation_params:
@@ -209,27 +240,28 @@ async def segment_dicom(
                 mascara_segmentada = aplicar_divisao_e_fusao(
                     pixel_array,segmentation_params['limite_var'],
                     segmentation_params['limite_media'],segmentation_params['referencia_media'])  
-                todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+                todos_os_contornos,contornos_validos=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
         
         elif method == "crescimento_regioes_fora":            
             imagem_segmentada_8bits_invertida = crescimento_regioes_fora(imagem_hu)
-            todos_os_contornos,contornos_validos_dict=remove_fundo(imagem_segmentada_8bits_invertida)
+            todos_os_contornos,contornos_validos=remove_fundo(imagem_segmentada_8bits_invertida)
 
         elif method == "otsu":
             mascara_segmentada = aplicar_otsu(pixel_array)
-            todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada)
+            todos_os_contornos,contornos_validos=remove_fundo(mascara_segmentada)
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Método de segmentação inválido. Use 'watershed' ou 'lim_media_mov' ou 'lim_multipla' ou 'lim_prop_locais', 'sauvola', 'otsu' ou 'divisao_e_fusao'.",
             )
         
-        if segmentation_params or method == 'otsu' or method == 'crescimento_regioes_fora':
+        if segmentation_params or method == 'otsu' or method == 'crescimento_regioes_fora' or method=='segmentation':
             pixel_array=imagem_para_base64(pixel_array)
+            print(pixel_array)
             print("Todos os contornos:", todos_os_contornos)
-            print("Contornos válidos:", contornos_validos_dict)
+            print("Contornos válidos:", contornos_validos)
+            return JSONResponse({"imagem_pre_processada":pixel_array, "todos_os_contornos":todos_os_contornos, "contornos_validos":contornos_validos})
         
-            return JSONResponse({"imagem_pre_processada":pixel_array, "todos_os_contornos":todos_os_contornos, "contornos_validos":contornos_validos_dict})
         return JSONResponse ({"imagem_pre_processada":{},"todos_os_contornos":{},"contornos_validos":{}})
     except Exception as e:
         stack_trace = traceback.format_exc()  # Captura a stack trace como string

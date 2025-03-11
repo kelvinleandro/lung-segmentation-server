@@ -11,6 +11,7 @@ from crud.segmentacao.curva import (
     remover_pontos,
 )
 from crud.segmentacao.energia import energia_externa, minimiza_energia
+from crud.segmentacao.carregar import carregar_imagem
 
 logger = logging.getLogger(__name__)
 
