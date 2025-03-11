@@ -82,7 +82,7 @@ async def segment_dicom(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Os seguintes parâmetros estão ausentes ou nulos: {', '.join(missing_params)}",)
             
-            mca = MCACrisp(
+            mca_esquerdo  = MCACrisp(
                 imagem_hu=imagem_hu,y_min=180,y_max=360,
                 x_min=256,x_max=512,quantidade_pixels = segmentation_params['quantidade_pixels'],
                 raio=segmentation_params['raio'],w_cont=segmentation_params['w_cont'],
@@ -91,21 +91,27 @@ async def segment_dicom(
                 early_stop=segmentation_params['early_stop'])
             
             #segmentando o primeiro pulmao
-            for curva in mca.process(max_iterations=segmentation_params['max_iterations']):
+            for curva in mca_esquerdo.process(max_iterations=segmentation_params['max_iterations']):
                 pass    
-            contorno_0=mca.curvas[-1]
-            #contorno_0 = np.round(mca.curvas[-1]).astype(int) caso haja a necessidade da lista ser formada só por inteiros
+            contorno_0 = mca_esquerdo.curvas[-1]
             
-            #segmentando o outro pulmao
-            mca.y_min=180
-            mca.y_max=360
-            mca.x_min=0
-            mca.x_max=256
-            for curva in mca.process(max_iterations=segmentation_params['max_iterations']):
+            #crisp para o pulmão direito
+            mca_direito = MCACrisp(
+                imagem_hu=imagem_hu, y_min=180, y_max=360,
+                x_min=0, x_max=256, quantidade_pixels=segmentation_params['quantidade_pixels'],
+                raio=segmentation_params['raio'], w_cont=segmentation_params['w_cont'],
+                w_adapt=segmentation_params['w_adapt'], d_max=segmentation_params['d_max'],
+                area_de_busca=segmentation_params['area_de_busca'], alpha=segmentation_params['alpha'],
+                early_stop=segmentation_params['early_stop']
+            )
+
+            #pulmão direito
+            for curva in mca_direito.process(max_iterations=segmentation_params['max_iterations']):
                 pass    
-            contorno_1=mca.curvas[-1]
-            #contorno_1 = np.round(mca.curvas[-1]).astype(int) caso haja a necessidade da lista ser formada só por inteiros
-            contornos_validos = {"contorno_0":contorno_0,"contorno_1":contorno_1}
+            contorno_1 = mca_direito.curvas[-1]
+
+            contornos_validos = {"contorno_0": contorno_0, "contorno_1": contorno_1}
+
             for key in contornos_validos:
                 contornos_validos[key] = contornos_validos[key].tolist()
             todos_os_contornos = {}
