@@ -3,9 +3,9 @@ import cv2
 from segmentacao.remove_fundo import remove_fundo
 
 
-def aplicar_lim_global_simples(imagem_cinza: np.ndarray,
-                               limiar=50,
-                               delta_limiar=5) -> tuple:
+def aplicar_lim_global_simples(
+    imagem_cinza: np.ndarray, limiar=50, delta_limiar=5
+) -> tuple:
     """
     Traça o contorno do pulmão da imagem utilizando Limiarização global simples.
 
@@ -30,7 +30,6 @@ def aplicar_lim_global_simples(imagem_cinza: np.ndarray,
 
     # Ajuste do limiar
     while mod_limiar_dif > delta_limiar:
-
         # Máscaras para separar os pixels
         grupo_maior = imagem_cinza[imagem_cinza > limiar_n]
         grupo_menor = imagem_cinza[imagem_cinza <= limiar_n]
@@ -41,19 +40,17 @@ def aplicar_lim_global_simples(imagem_cinza: np.ndarray,
 
         # Novo limiar é calculado
         limiar_n_anterior = limiar_n
-        limiar_n = (media_maior + media_menor_igual)/2
+        limiar_n = (media_maior + media_menor_igual) / 2
 
         # diferença entre os limiares é recalculada
         mod_limiar_dif = abs(limiar_n_anterior - limiar_n)
 
     # aplicada limiar
-    _, imagem_cinza_binario = cv2.threshold(imagem_cinza,
-                                            limiar_n,
-                                            255,
-                                            cv2.THRESH_BINARY)
+    _, imagem_cinza_binario = cv2.threshold(
+        imagem_cinza, limiar_n, 255, cv2.THRESH_BINARY
+    )
 
     # inverte a imagem binária
     imagem_cinza_binario_invertida = (255 - imagem_cinza_binario).astype(np.uint8)
 
     return remove_fundo(imagem_cinza_binario_invertida)
-
