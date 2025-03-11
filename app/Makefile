@@ -15,7 +15,7 @@ install:
 	pip install --force-reinstall --upgrade --trusted-host pypi.python.org -r requirements.txt
 
 run-dev:
-	uvicorn main:app --timeout-keep-alive 60 --port 8080 --reload
+	uvicorn main:app --timeout-keep-alive 60 --port 8081 --reload
 
 clear:
 	find . -type d -name '__pycache__' -exec rm -rf {} + && \
