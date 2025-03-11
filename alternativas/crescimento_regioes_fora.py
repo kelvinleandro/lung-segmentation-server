@@ -92,6 +92,9 @@ def crescimento_regioes_fora(imagem_original):
     # Inverter a imagem segmentada para possibilitar o processamento posterior
     imagem_segmentada_8bits_invertida = cv2.bitwise_not(imagem_segmentada_8bits)
 
+    # Remover as colunas extras antes de processar a imagem segmentada
+    imagem_segmentada_8bits_invertida = imagem_segmentada_8bits_invertida[:, 10:-10]
+	
     # Aplicar a função de remoção de fundo e obter os contornos do pulmão
     pulmao_contornado, contornos_validos = remove_fundo(imagem_segmentada_8bits_invertida)
 
