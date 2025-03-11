@@ -21,3 +21,9 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Rodar o servidor local 
+
+```bash
+cd app
+make run-dev
+```
