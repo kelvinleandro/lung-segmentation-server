@@ -25,6 +25,7 @@ from crud.alternativas.sauvola import aplicar_sauvola
 from crud.alternativas.div_e_fus_regioes import aplicar_divisao_e_fusao 
 from crud.alternativas.otsu import aplicar_otsu
 from crud.alternativas.aplicar_filtros import aplicar_filtros
+from crud.alternativas.crescimento_regioes_fora import crescimento_regioes_fora
 
 
 router = APIRouter()
@@ -71,7 +72,7 @@ async def segment_dicom(
 
             preprocessing_params=converte_param_preprocess(preprocessing_params)
             pixel_array=aplicar_filtros(pixel_array, 
-                preprocessing_params['aplicar_desfoque_gaussiano'],preprocessing_params['aplicar_desfoque_media'],
+                preprocessing_params['aplicar_desfoque_media'],preprocessing_params['aplicar_desfoque_gaussiano'],
                 preprocessing_params['aplicar_desfoque_mediana'],preprocessing_params['tamanho_kernel'],
                 preprocessing_params['sigma'])
 
@@ -210,16 +211,20 @@ async def segment_dicom(
                     segmentation_params['limite_media'],segmentation_params['referencia_media'])  
                 todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
         
+        elif method == "crescimento_regioes_fora":            
+            imagem_segmentada_8bits_invertida = crescimento_regioes_fora(imagem_hu)
+            todos_os_contornos,contornos_validos_dict=remove_fundo(imagem_segmentada_8bits_invertida)
+
         elif method == "otsu":
             mascara_segmentada = aplicar_otsu(pixel_array)
-            todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
+            todos_os_contornos,contornos_validos_dict=remove_fundo(mascara_segmentada)
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Método de segmentação inválido. Use 'watershed' ou 'lim_media_mov' ou 'lim_multipla' ou 'lim_prop_locais', 'sauvola', 'otsu' ou 'divisao_e_fusao'.",
             )
         
-        if segmentation_params:
+        if segmentation_params or method == 'otsu' or method == 'crescimento_regioes_fora':
             pixel_array=imagem_para_base64(pixel_array)
             print("Todos os contornos:", todos_os_contornos)
             print("Contornos válidos:", contornos_validos_dict)
