@@ -3,9 +3,15 @@ import numpy as np
 from scipy.ndimage import uniform_filter
 from segmentacao.remove_fundo import remove_fundo
 
-def aplicar_limiarizacao_propriedades(imagem, tamanho_janela=151, a=1.0, b=0.5,
-                                       usar_media_global=False,
-                                       aplicar_interpolacao=True) -> tuple:
+
+def aplicar_limiarizacao_propriedades(
+    imagem,
+    tamanho_janela=151,
+    a=1.0,
+    b=0.5,
+    usar_media_global=False,
+    aplicar_interpolacao=True,
+) -> tuple:
     """
     Aplica limiarização variável baseada na média e no desvio-padrão locais.
     Calcula um limiar para cada ponto da imagem de forma vetorizada.
@@ -38,6 +44,7 @@ def aplicar_limiarizacao_propriedades(imagem, tamanho_janela=151, a=1.0, b=0.5,
     limiarizada = np.where(imagem > Txy, 255, 0).astype(np.uint8)
 
     if aplicar_interpolacao:
+
         limiarizada = cv2.resize(limiarizada, None, fx=1.2, fy=1.2,
                                  interpolation=cv2.INTER_CUBIC)
         limiarizada = cv2.resize(limiarizada, (imagem.shape[1], imagem.shape[0]),

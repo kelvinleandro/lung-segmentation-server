@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def converter_hu_para_cinza(imagem_hu, hu_min=-1000, hu_max=2000) -> np.ndarray:
     """
     Converte Hounsfield Units (HU) para escala de cinza.

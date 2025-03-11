@@ -1,9 +1,5 @@
-import cv2
 import numpy as np
 from segmentacao.remove_fundo import remove_fundo
-from segmentacao.carregar import carregar_imagem
-import alternativas.hu_para_cinza as hu
-import matplotlib.pyplot as plt
 
 
 def classificar_pixel(
@@ -15,7 +11,8 @@ def classificar_pixel(
     lim_osso: tuple = (136, 255),
 ) -> int:
     """
-    Classifica o valor de cada pixel com base no intervalo de Hounsfield Units (HU) convertido para escala de cinza.
+    Classifica o valor de cada pixel com base no intervalo de Hounsfield Units (HU)
+    convertido para escala de cinza.
 
     Parâmetros:
         pixel_value (int): Valor do pixel em HU (intensidade da imagem).
