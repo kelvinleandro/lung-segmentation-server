@@ -2,8 +2,37 @@ import cv2
 import numpy as np
 from crud.alternativas.remove_fundo import remove_fundo
 
-
 def crescimento_regioes_fora(imagem_original):
+
+    hu_min=-1000
+    hu_max=2000
+    largura_hu = hu_max - hu_min
+    imagem_original = imagem_original.astype(np.float32)
+    imagem_original = (imagem_original * largura_hu) / 255.0 + hu_min
+
+    """
+    Aplica o algoritmo de crescimento de regiões com a semente fora do pulmão.
+
+    Parâmetros:
+        imagem (np.ndarray): Imagem de entrada em escala de cinza.
+    Retorna:
+            - Imagem original com os contornos dos pulmões destacados em vermelho.
+            - Imagem com apenas os contornos dos pulmões em vermelho sobre fundo preto.
+
+    Resumo da teoria:
+        A técnica de segmentação por crescimento de regiões consiste em agrupar regiões 
+        que compartilham propriedades parecidas, como intensidade de pixels, textura ou 
+        cor. O método é iniciado a partir de um ou mais pixels denominados de “sementes”, 
+        que podem pertencer ou não ao elemento que se deseja segmentar. São definidos 
+        critérios de similaridade, que indicam quais pixels devem ser incluídos na região 
+        baseados em sua textura, intensidade ou cor. 
+
+	    A partir das sementes e dos critérios de similaridade é iniciado o crescimento da 
+        região, onde os pixels que atendem aos critérios são adicionados a região, parando 
+        quando não há mais pixels disponíveis a serem adicionados ou o tamanho máximo da 
+        região foi atingido.  
+        """
+
     # Adicionar colunas extras (-1000 HU) nas laterais da imagem
     colunas_extras = np.full((imagem_original.shape[0], 10), -1000, dtype=np.int16)
     imagem = np.hstack((colunas_extras, imagem_original, colunas_extras))
@@ -61,6 +90,9 @@ def crescimento_regioes_fora(imagem_original):
     imagem_segmentada_8bits = np.where(mascara == 1, 255, imagem_normalizada)
 
     # Inverter a imagem segmentada para possibilitar o processamento posterior
-    imagem_segmentada_8bits_invertida = cv2.bitwise_not(imagem_segmentada_8bits)    
+    imagem_segmentada_8bits_invertida = cv2.bitwise_not(imagem_segmentada_8bits)
+
+    # Remover as colunas extras antes de processar a imagem segmentada
+    imagem_segmentada_8bits_invertida = imagem_segmentada_8bits_invertida[:, 10:-10]
 
     return imagem_segmentada_8bits_invertida
