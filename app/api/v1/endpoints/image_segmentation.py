@@ -249,7 +249,7 @@ async def segment_dicom(
                 todos_os_contornos,contornos_validos=remove_fundo(mascara_segmentada,postprocessing_params['area_minima'])
         
         elif method == "crescimento_regioes_fora":            
-            imagem_segmentada_8bits_invertida = crescimento_regioes_fora(imagem_hu)
+            imagem_segmentada_8bits_invertida = crescimento_regioes_fora(pixel_array)
             todos_os_contornos,contornos_validos=remove_fundo(imagem_segmentada_8bits_invertida)
 
         elif method == "otsu":
