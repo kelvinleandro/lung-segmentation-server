@@ -164,21 +164,6 @@ async def segment_dicom(
                 segmentation_params = converter_parametros_para_tipos(
                     segmentation_params
                 )
-                print(f"limiar={segmentation_params['limiar']}")
-                print(
-                    f"aplicar_interpolacao={segmentation_params['aplicar_interpolacao']}"
-                )
-                print(f"aplicar_morfologia={segmentation_params['aplicar_morfologia']}")
-                print(f"tamanho_kernel={segmentation_params['tamanho_kernel']}")
-                print(
-                    f"iteracoes_morfologia={segmentation_params['iteracoes_morfologia']}"
-                )
-                print(
-                    f"iteracoes_dilatacao={segmentation_params['iteracoes_dilatacao']}"
-                )
-                print(
-                    f"fator_dist_transform={segmentation_params['fator_dist_transform']}"
-                )
 
                 mascara_segmentada = aplicar_watershed(
                     pixel_array,
@@ -209,11 +194,6 @@ async def segment_dicom(
                     segmentation_params
                 )
 
-                print(f"n={segmentation_params['n']}")
-                print(f"b={segmentation_params['b']}")
-                print(
-                    f"aplicar_interpolacao={segmentation_params['aplicar_interpolacao']}"
-                )
 
                 mascara_segmentada = aplicar_limiarizacao_media_movel(
                     pixel_array,
@@ -264,29 +244,6 @@ async def segment_dicom(
                 segmentation_params = converter_parametros_para_tipos(
                     segmentation_params
                 )
-                print(f"lim_hiperaeradas={segmentation_params['lim_hiperaeradas']}")
-                print(
-                    f"lim_normalmente_aeradas={segmentation_params['lim_normalmente_aeradas']}"
-                )
-                print(f"lim_pouco_aeradas={segmentation_params['lim_pouco_aeradas']}")
-                print(f"lim_nao_aeradas={segmentation_params['lim_nao_aeradas']}")
-                print(f"lim_osso={segmentation_params['lim_osso']}")
-                print(
-                    f"ativacao_hiperaeradas={segmentation_params['ativacao_hiperaeradas']}"
-                )
-                print(
-                    f"ativacao_normalmente_aeradas={segmentation_params['ativacao_normalmente_aeradas']}"
-                )
-                print(
-                    f"ativacao_pouco_aeradas={segmentation_params['ativacao_pouco_aeradas']}"
-                )
-                print(
-                    f"ativacao_nao_aeradas={segmentation_params['ativacao_nao_aeradas']}"
-                )
-                print(f"ativacao_osso={segmentation_params['ativacao_osso']}")
-                print(
-                    f"ativacao_nao_classificado={segmentation_params['ativacao_nao_classificado']}"
-                )
                 mascara_segmentada = limiarizacao_multipla(
                     pixel_array,
                     segmentation_params["lim_hiperaeradas"],
@@ -319,13 +276,6 @@ async def segment_dicom(
                 segmentation_params = converter_parametros_para_tipos(
                     segmentation_params
                 )
-                print(f"tamanho_janela={segmentation_params['tamanho_janela']}")
-                print(f"a={segmentation_params['a']}")
-                print(f"b={segmentation_params['b']}")
-                print(f"usar_media_global={segmentation_params['usar_media_global']}")
-                print(
-                    f"aplicar_interpolacao={segmentation_params['aplicar_interpolacao']}"
-                )
                 mascara_segmentada = aplicar_limiarizacao_propriedades(
                     pixel_array,
                     segmentation_params["tamanho_janela"],
@@ -351,16 +301,6 @@ async def segment_dicom(
                     )
                 segmentation_params = converter_parametros_para_tipos(
                     segmentation_params
-                )
-                print(f"tamanho_janela={segmentation_params['tamanho_janela']}")
-                print(f"k={segmentation_params['k']}")
-                print(
-                    f"aplicar_interpolacao={segmentation_params['aplicar_interpolacao']}"
-                )
-                print(f"aplicar_morfologia={segmentation_params['aplicar_morfologia']}")
-                print(f"tamanho_kernel={segmentation_params['tamanho_kernel']}")
-                print(
-                    f"iteracoes_morfologia={segmentation_params['iteracoes_morfologia']}"
                 )
                 mascara_segmentada = aplicar_sauvola(
                     pixel_array,
@@ -389,9 +329,6 @@ async def segment_dicom(
                 segmentation_params = converter_parametros_para_tipos(
                     segmentation_params
                 )
-                print(f"limite_var={segmentation_params['limite_var']}")
-                print(f"limite_media={segmentation_params['limite_media']}")
-                print(f"referencia_media={segmentation_params['referencia_media']}")
                 mascara_segmentada = aplicar_divisao_e_fusao(
                     pixel_array,
                     segmentation_params["limite_var"],
@@ -424,9 +361,9 @@ async def segment_dicom(
             or method == "segmentation"
         ):
             pixel_array = imagem_para_base64(pixel_array)
-            print(pixel_array)
-            print("Todos os contornos:", todos_os_contornos)
-            print("Contornos válidos:", contornos_validos)
+            #print(pixel_array)
+            #print("Todos os contornos:", todos_os_contornos)
+            #print("Contornos válidos:", contornos_validos)
             return JSONResponse(
                 {
                     "imagem_pre_processada": pixel_array,

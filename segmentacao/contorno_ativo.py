@@ -34,7 +34,7 @@ def minimize_curve(curva, energia_crisp, area_de_busca, w_adapt, w_cont):
 class MCACrisp:
     def __init__(
         self,
-        image_path,
+        imagem_hu,
         y_min,
         y_max,
         x_min,
@@ -48,7 +48,7 @@ class MCACrisp:
         alpha=20,
         early_stop=0.2,
     ):
-        self.img = carregar_imagem(image_path)
+        self.img = imagem_hu
         self.centro = crisp_inicial(self.img, y_min, y_max, x_min, x_max)
         self.curva = inicializa_curva(
             self.centro, quantidade_pixels=quantidade_pixels, raio=raio
