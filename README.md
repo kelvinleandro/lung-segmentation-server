@@ -27,13 +27,13 @@ O backend foi desenvolvido utilizando **FastAPI**. Para otimização das operaç
 
 É recomendado o uso de um ambiente virtual para gerenciar dependências:
 
-```bash
+```
 python -m venv .venv
 ```
 
 Ative o venv:
 
-```bash
+```
 Linux/Mac:
 source .venv/bin/activate
 
@@ -43,12 +43,13 @@ Windows:
 ```
 ### Instalação das dependências
 
-```bash
+```
 pip install -r requirements.txt
 ```
 
 ### Rodar o Servidor local 
 
-```cd app
+```
+cd app
 make run-dev
 ```
