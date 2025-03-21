@@ -1,37 +1,37 @@
-# Backend - Projeto Final de PDI
+# Lung Segmentation Server
 
-## Visão Geral
+## Overview
 
-Este repositório contém o backend do projeto de segmentação pulmonar, responsável por processar os arquivos DICOM enviados pelo frontend, executar os algoritmos de segmentação e retornar os resultados processados.
+This repository contains the backend of the lung segmentation project, responsible for processing the DICOM files uploaded by the [frontend](https://github.com/kelvinleandro/lung-segmentation-client), running the segmentation algorithms, and returning the processed results.
 
-O backend foi desenvolvido utilizando **FastAPI**. Para otimização das operações matemáticas e de imagem, foram utilizadas as bibliotecas **NumPy** e **Numba**, permitindo cálculos vetorizados e processamento paralelo.
+The backend was developed using **FastAPI**. To optimize mathematical and image operations, the **NumPy** and **Numba** libraries were used, enabling vectorized calculations and parallel processing.
 
-## Tecnologias Utilizadas
+## Technologies Used
 
 - **API**: FastAPI
-- **Processamento Numérico e Vetorizado**: NumPy, Numba
-- **Execução Paralela e Otimização**: Numba
-- **Leitura e Processamento de Imagens DICOM**: Pydicom
+- **Numerical and Vectorized Processing**: NumPy, Numba
+- **Parallel Execution and Optimization**: Numba
+- **Reading and Processing DICOM Images**: Pydicom
 
-## Funcionalidades
+## Features
 
-- ✅ Processamento de arquivos DICOM (.dcm)
-- ✅ Implementação de métodos de segmentação (MCA Crisp, Otsu, Watershed, Sauvola, Divisão e Fusão, Crescimento de semente em região fora do pulmão, Limite Média Móvel, Limite Múltiplo e  Limite Propriedades Locais)
-- ✅ Otimização de algoritmos utilizando Numba
-- ✅ API REST para comunicação com o frontend
-- ✅ Geração de contornos e imagem segmentada
+- ✅ Processing of DICOM files (.dcm)
+- ✅ Implementation of segmentation methods (MCA Crisp, Otsu, Watershed, Sauvola, Division and Fusion, Seed Growth in Region Outside the Lung, Moving Average Threshold, Multiple Threshold, and Local Properties Threshold)
+- ✅ Optimization of algorithms using Numba
+- ✅ REST API for communication with the frontend
+- ✅ Generation of contours and segmented image
 
-## Instalação e Configuração
+## Installation and Configuration
 
-### 1. Criar e Ativar Ambiente Virtual (venv)
+### 1. Create and Activate Virtual Environment (venv)
 
-É recomendado o uso de um ambiente virtual para gerenciar dependências:
+It is recommended to use a virtual environment to manage dependencies:
 
 ```
 python -m venv .venv
 ```
 
-Ative o venv:
+Activate the venv:
 
 ```
 Linux/Mac:
@@ -39,15 +39,15 @@ source .venv/bin/activate
 
 Windows:
 .venv\Scripts\activate
-
 ```
-### Instalação das dependências
+
+### Install Dependencies
 
 ```
 pip install -r requirements.txt
 ```
 
-### Rodar o Servidor local 
+### Run the Local Server
 
 ```
 cd app
